@@ -58,7 +58,7 @@
             }
         }
 
-        function executeMessage(message, userTypingTheCommand) {
+        function executeCommand(message, userTypingTheCommand) {
             var r = /^!d(?:ig)?\s+(\d+)\s*,\s*(\d+)\s*$/;
             var m = message.match(r);
             if (m) {
@@ -68,6 +68,11 @@
             m = message.match(r);
             if (m) {
                 toggleFlag(parseInt(m[1], 10), nh - 1 - parseInt(m[2], 10), userTypingTheCommand);
+            }
+            r = /^!s(?:tatus)?\s*$/;
+            m = message.match(r);
+            if (m) {
+                showStatus(userTypingTheCommand);
             }
             if (userTypingTheCommand.userName === BOT_USERNAME || userTypingTheCommand.userName === STREAMER) {
                 r = /^!reset\s*$/;
@@ -138,7 +143,7 @@
                                 user.color = colorRegexMatch[1];
                             }
 
-                            executeMessage(parsed.message, user);
+                            executeCommand(parsed.message, user);
                         } else if (parsed.command === "PING") {
                             ws.send("PONG :" + parsed.message);
                         }
@@ -167,7 +172,7 @@
                 if (ev.keyCode === 13) {
                     // the newline at the end is what we get from twitch chat too so we are better off
                     // having a realistic imitation here to avoid discovering bugs in regexes later on
-                    executeMessage(ev.target.value + '\r\n', locateUser(STREAMER, true));
+                    executeCommand(ev.target.value + '\r\n', locateUser(STREAMER, true));
                 }
             });
         }
@@ -248,6 +253,10 @@
         function clearField() {
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, width, height);
+        }
+
+        function showStatus(userExecutingTheCommand) {
+            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
         }
 
         function drawGrid() {
