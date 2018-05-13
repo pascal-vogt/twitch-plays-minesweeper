@@ -476,16 +476,16 @@
         }
 
         function uncoverTile(x, y, user) {
-            if (user.disqualified) {
+            var cell = cellData[y][x];
+            if (user.disqualified || cell.isUncovered) {
                 return;
             }
-            var cell = cellData[y][x];
             if (cell.isMine) {
                 cell.isFlagged = false;
                 cell.isUncovered = true;
                 cell.isExploded = true;
                 user.disqualified = true;
-                sentMessageToChat('F in chat for ' + user.userName + ' (hit a mine)');
+                sentMessageToChat(user.userName + ' just hit a mine.');
             } else if (cell.neighbouringMineCount === 0) {
                 cell.isUncovered = true;
                 cell.isFlagged = false;
@@ -501,10 +501,10 @@
         }
 
         function toggleFlag(x, y, user) {
-            if (user.disqualified) {
+            var cell = cellData[y][x];
+            if (user.disqualified || cell.isUncovered) {
                 return;
             }
-            var cell = cellData[y][x];
             if (!cell.isUncovered) {
                 cell.isFlagged = !cell.isFlagged;
                 drawAllTheThings();
