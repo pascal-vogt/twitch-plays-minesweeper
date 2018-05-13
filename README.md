@@ -8,3 +8,8 @@ Chat based minesweeper for usage in a Twitch stream
 - People in your chat will be able to use the commands described in the HTML
 - Use !reset in chat to reset the game
 - Use !revive username to revive a specific user 
+
+# Commands available to everyone
+- !dig x,y
+- !flag x,y
+- !status
