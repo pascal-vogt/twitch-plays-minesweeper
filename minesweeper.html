@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <style>
+body {
+    font-family: "LM Mono 12";
+    background-color: white;
+    color: #101010;
+}
+ul {
+    list-style: none;
+    padding: 0;
+}
+h1, h2 {
+    padding: 0;
+    margin: 0;
+}
+#game, #leaderboard {
+    display: inline-block;
+    vertical-align: text-top;
+}
+        </style>
+        <script src="config.js"></script>
+        <script src="minesweeper.js"></script>
+    </head>
+    <body>
+        <h1>Chat based Minesweeper <span id="size-text"></span></h1>
+        <canvas id="game" width="600" height="400"></canvas>
+        <div id="leaderboard">
+            <h2>Leaderboard</h2>
+            <ul id="leaderboard-name-list">
+            </ul>
+            <h2>Commands</h2>
+            <ul>
+                <li>!dig x, y</li>
+                <li>!flag x, y</li>
+                <li id="offline-command-container"><input id="offline-command-field" /></li>
+            </ul>
+        </div>
+        <p>
+                The first coordinate is the horizontal one, the second the vertical one.
+
+                Uncovering tiles that don't have mines gives you points. Uncovering a mine makes you lose but you keep your points.
+
+                Placing flags doesn't influence the score (yet).
+        </p>
+    </body>
+</html>
