@@ -69,6 +69,11 @@
             if (m) {
                 toggleFlag(parseInt(m[1], 10), nh - 1 - parseInt(m[2], 10), userTypingTheCommand);
             }
+            r = /^!c(?:heck)?\s+(\d+)\s*,\s*(\d+)\s*$/;
+            m = message.match(r);
+            if (m) {
+                checkNumber(parseInt(m[1], 10), nh - 1 - parseInt(m[2], 10), userTypingTheCommand);
+            }
             r = /^!s(?:tatus)?\s*$/;
             m = message.match(r);
             if (m) {
@@ -495,6 +500,41 @@
                 cell.isUncovered = true;
                 cell.isFlagged = false;
                 user.score += 1;
+            }
+            updateLeaderboard();
+            drawAllTheThings();
+        }
+
+        function checkNumber(x, y, user) {
+            var cell = cellData[y][x];
+            if (user.disqualified || !cell.isUncovered) {
+                return;
+            }
+            var neighbours = getNeighbours(x, y);
+            var count = 0;
+            for (var i = 0, l = neighbours.length; i < l; ++i) {
+                var otherCell = neighbours[i];
+                if ((otherCell.isMine && otherCell.isUncovered) || otherCell.isFlagged) {
+                    count += 1;
+                }
+            }
+            if (count === cell.neighbouringMineCount) {
+                for (var i = 0, l = neighbours.length; i < l; ++i) {
+                    var otherCell = neighbours[i];
+                    if (!otherCell.isUncovered && !otherCell.isFlagged) {
+                        otherCell.isUncovered = true;
+                        if (otherCell.isMine) {
+                            otherCell.isUncovered = true;
+                            otherCell.isExploded = true;
+                            user.disqualified = true;
+                        } else {
+                            user.score += 1;
+                        }
+                    }
+                }
+                if (user.disqualified) {
+                    sentMessageToChat(user.userName + ' just hit a mine.');
+                }
             }
             updateLeaderboard();
             drawAllTheThings();
