@@ -17,6 +17,7 @@
 
         var cellData = [];
         var users = [];
+        var firstDig = true;
 
         function updateLeaderboard() {
             var contents = '';
@@ -38,7 +39,7 @@
             }
             leaderBoardNameList.innerHTML = contents;
         }
-        
+
         function locateUser(userName, createIfNotFound) {
             for (var i = 0, l = users.length; i < l; ++i) {
                 if (users[i].userName === userName) {
@@ -222,6 +223,7 @@
 
         function initData() {
             cellData = [];
+            firstDig = true;
             for (var y = 0; y < nh; ++y) {
                 var cellDataLine = [];
                 cellData.push(cellDataLine);
@@ -319,7 +321,7 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(gridSize * (x + 0.5) - 3, gridSize * (y + 0.5) - 3, 2, 2)
         }
-        
+
         function drawCoveredCellAt(x, y) {
             ctx.fillStyle = 'rgb(128, 128, 128)';
             ctx.beginPath();
@@ -486,6 +488,11 @@
                 return;
             }
             if (cell.isMine) {
+                if (firstDig) { // if is 1st dig... make new baord
+                  initData();
+                  uncoverTile(x, y, user);
+                  return;
+                }
                 cell.isFlagged = false;
                 cell.isUncovered = true;
                 cell.isExploded = true;
@@ -501,6 +508,7 @@
                 cell.isFlagged = false;
                 user.score += 1;
             }
+            firstDig = false;
             updateLeaderboard();
             drawAllTheThings();
         }
