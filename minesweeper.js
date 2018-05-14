@@ -84,7 +84,7 @@
                 r = /^!reset\s*$/;
                 m = message.match(r);
                 if (m) {
-                    initData();
+                    initData(true);
                     updateLeaderboard();
                     drawAllTheThings();
                 }
@@ -221,7 +221,7 @@
             return parsedMessage;
         }
 
-        function initData() {
+        function initData(resetUsers) {
             cellData = [];
             firstDig = true;
             for (var y = 0; y < nh; ++y) {
@@ -253,7 +253,9 @@
                 }
             }
 
-            users = [];
+            if (resetUsers) {
+                users = [];
+            }
             updateLeaderboard();
         }
 
@@ -488,10 +490,10 @@
                 return;
             }
             if (cell.isMine) {
-                if (firstDig) { // if is 1st dig... make new baord
-                  initData();
-                  uncoverTile(x, y, user);
-                  return;
+                if (firstDig) { // if is 1st dig... make new board
+                    initData(false);
+                    uncoverTile(x, y, user);
+                    return;
                 }
                 cell.isFlagged = false;
                 cell.isUncovered = true;
@@ -588,7 +590,7 @@
             return count;
         }
 
-        initData();
+        initData(true);
         drawAllTheThings();
     });
 })();

@@ -12,4 +12,5 @@ Chat based minesweeper for usage in a Twitch stream
 # Commands available to everyone
 - !dig x,y
 - !flag x,y
+- !check x,y
 - !status
