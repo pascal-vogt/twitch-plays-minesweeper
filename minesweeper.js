@@ -34,7 +34,11 @@
             for (var i = 0, l = Math.min(10, users.length); i < l; ++i) {
                 var user = users[i];
                 if (user.score > 0 || user.disqualified) {
-                    contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', RIP' : '') + ')</li>';
+                    // code to have button for revive.... nested function dosen't allow right now...
+                    //contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', <input id="RIP" type="button" value="rip" onclick="revive(\''+users[i].userName+'\');" />' : '') + ')</li>';
+
+                    contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', RIP['+users[i].timeout+']' : '') + ')</li>';
+
                 }
             }
             leaderBoardNameList.innerHTML = contents;
@@ -51,6 +55,7 @@
                     userName: userName,
                     score: 0,
                     disqualified: false,
+                    timeout: 0,
                     color: '#000000'
                 });
                 return users[users.length - 1];
@@ -84,24 +89,47 @@
                 r = /^!reset\s*$/;
                 m = message.match(r);
                 if (m) {
-                    initData(true);
+                    initData();
                     updateLeaderboard();
                     drawAllTheThings();
                 }
                 r = /^!revive (\S+)\s*$/;
                 m = message.match(r);
                 if (m) {
-                    var toBeRevived = locateUser(m[1], false);
-                    if (toBeRevived) {
-                        sentMessageToChat('Reviving ' + toBeRevived.userName);
-                        toBeRevived.disqualified = false;
-                        updateLeaderboard();
-                        drawAllTheThings();
-                    } else {
-                        sentMessageToChat('User ' + m[1] + ' not found');
-                    }
+                    revive(m[1]);
                 }
             }
+        }
+
+        function revive(userName){
+          var toBeRevived = locateUser(userName.toLowerCase(), false); // FIXME: quick fix for case diffrence of twitch chat and IRC
+          if (toBeRevived) {
+              sentMessageToChat('Reviving ' + toBeRevived.userName);
+              toBeRevived.disqualified = false;
+              toBeRevived.timeout = 0;
+              updateLeaderboard();
+              drawAllTheThings();
+          } else {
+              sentMessageToChat('User ' + userName + ' not found');
+          }
+        }
+
+        function disqualify(user, reason){
+          user.disqualified = true;
+          user.timeout = 10;
+          sentMessageToChat(user.userName + reason);
+        }
+
+        function reviveClock(){
+          for (var i = 0, l = users.length; i < l; ++i) {
+              if (users[i].disqualified) {
+                users[i].timeout--;
+                if (users[i].timeout<=0) {
+                  revive(users[i].userName);
+                }
+              }
+          }
+          updateLeaderboard();
         }
 
         function getNeighbours(x, y) {
@@ -221,43 +249,46 @@
             return parsedMessage;
         }
 
-        function initData(resetUsers) {
-            cellData = [];
-            firstDig = true;
-            for (var y = 0; y < nh; ++y) {
-                var cellDataLine = [];
-                cellData.push(cellDataLine);
-                for (var x = 0; x < nw; ++x) {
-                    cellDataLine.push({
-                        x: x,
-                        y: y,
-                        isMine: Math.random() < mineDensity,
-                        isExploded: false,
-                        isUncovered: false,
-                        neighbouringMineCount: 0,
-                        isFlagged: false
-                    });
-                }
-            }
-
-            for (var y = 0; y < nh; ++y) {
-                for (var x = 0; x < nw; ++x) {
-                    var cell = cellData[y][x];
-                    if (!cell.isMine) {
-                        continue;
-                    }
-                    var neighbours = getNeighbours(x, y);
-                    for (var i = 0, l = neighbours.length; i < l; ++i) {
-                        ++neighbours[i].neighbouringMineCount;
-                    }
-                }
-            }
-
-            if (resetUsers) {
-                users = [];
-            }
-            updateLeaderboard();
+        function initData() {
+            initBoard();          // make new gameboard
+            users = [];           // clear leaderboard
+            updateLeaderboard();  // draw leaderboard area
+            var clock = setInterval(reviveClock ,1000); // init revice clock
         }
+
+        function initBoard(){
+          cellData = [];
+          firstDig = true;
+          for (var y = 0; y < nh; ++y) {
+              var cellDataLine = [];
+              cellData.push(cellDataLine);
+              for (var x = 0; x < nw; ++x) {
+                  cellDataLine.push({
+                      x: x,
+                      y: y,
+                      isMine: Math.random() < mineDensity,
+                      isExploded: false,
+                      isUncovered: false,
+                      neighbouringMineCount: 0,
+                      isFlagged: false
+                  });
+              }
+          }
+
+          for (var y = 0; y < nh; ++y) {
+              for (var x = 0; x < nw; ++x) {
+                  var cell = cellData[y][x];
+                  if (!cell.isMine) {
+                      continue;
+                  }
+                  var neighbours = getNeighbours(x, y);
+                  for (var i = 0, l = neighbours.length; i < l; ++i) {
+                      ++neighbours[i].neighbouringMineCount;
+                  }
+              }
+          }
+        }
+
 
         function clearField() {
             ctx.fillStyle = 'white';
@@ -265,7 +296,7 @@
         }
 
         function showStatus(userExecutingTheCommand) {
-            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
+            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+''/*somethings*/ : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
         }
 
         function drawGrid() {
@@ -450,12 +481,14 @@
             ctx.restore();
             ctx.save();
             ctx.transform(1, 0, 0, 1, 0, axisWidth);
+            var alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","L","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
             for (var y = 0; y < nh; ++y) {
                 ctx.beginPath();
                 ctx.moveTo(axisWidth * 0.8, gridSize * (y + 0.5));
                 ctx.lineTo(axisWidth, gridSize * (y + 0.5));
                 ctx.stroke();
                 ctx.closePath();
+                //ctx.strokeText(alphabet[(nh - 1 - y)], axisWidth * 0.4, gridSize * (y + 0.5));
                 ctx.strokeText((nh - 1 - y), axisWidth * 0.4, gridSize * (y + 0.5));
 
                 ctx.beginPath();
@@ -463,7 +496,9 @@
                 ctx.lineTo((nw + 1) * gridSize + axisWidth * 0.2, gridSize * (y + 0.5));
                 ctx.stroke();
                 ctx.closePath();
+                //ctx.strokeText(alphabet[(nh - 1 - y)], (nw + 1) * gridSize + axisWidth * 0.6, gridSize * (y + 0.5));
                 ctx.strokeText((nh - 1 - y), (nw + 1) * gridSize + axisWidth * 0.6, gridSize * (y + 0.5));
+
             }
             ctx.restore();
         }
@@ -491,15 +526,14 @@
             }
             if (cell.isMine) {
                 if (firstDig) { // if is 1st dig... make new board
-                    initData(false);
+                    initBoard();
                     uncoverTile(x, y, user);
                     return;
                 }
                 cell.isFlagged = false;
                 cell.isUncovered = true;
                 cell.isExploded = true;
-                user.disqualified = true;
-                sentMessageToChat(user.userName + ' just hit a mine.');
+                disqualify(user,' just hit a mine.');
             } else if (cell.neighbouringMineCount === 0) {
                 cell.isUncovered = true;
                 cell.isFlagged = false;
@@ -536,14 +570,14 @@
                         if (otherCell.isMine) {
                             otherCell.isUncovered = true;
                             otherCell.isExploded = true;
-                            user.disqualified = true;
+                            user.disqualified = true; //// TODO: real var for this
                         } else {
                             user.score += 1;
                         }
                     }
                 }
-                if (user.disqualified) {
-                    sentMessageToChat(user.userName + ' just hit a mine.');
+                if (user.disqualified) { //// TODO: use that var here
+                    disqualify(user,' just hit a mine.');
                 }
             }
             updateLeaderboard();
@@ -590,7 +624,7 @@
             return count;
         }
 
-        initData(true);
+        initData();
         drawAllTheThings();
     });
 })();
