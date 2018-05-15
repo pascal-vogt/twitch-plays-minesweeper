@@ -253,7 +253,6 @@
             initBoard();          // make new gameboard
             users = [];           // clear leaderboard
             updateLeaderboard();  // draw leaderboard area
-            var clock = setInterval(reviveClock ,1000); // init revice clock
         }
 
         function initBoard(){
@@ -296,7 +295,7 @@
         }
 
         function showStatus(userExecutingTheCommand) {
-            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+''/*somethings*/ : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
+            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
         }
 
         function drawGrid() {
@@ -626,5 +625,6 @@
 
         initData();
         drawAllTheThings();
+        var clock = setInterval(reviveClock ,1000); // init revice clock
     });
 })();
