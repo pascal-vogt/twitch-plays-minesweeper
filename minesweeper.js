@@ -510,6 +510,14 @@
             uncoverTile(x, y, locateUser(STREAMER, true));
         }
 
+        function mmbClick(event) {// TODO: for some reason cant detect the action of MMB
+            var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
+            var mouseY = event.clientY - canvas.offsetTop - axisWidth;
+            var x = Math.floor(mouseX / gridSize);
+            var y = Math.floor(mouseY / gridSize);
+            check(x, y, locateUser(STREAMER, true));
+        }
+
         function rightClick(event) {
             var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
             var mouseY = event.clientY - canvas.offsetTop - axisWidth;
@@ -570,13 +578,22 @@
                             otherCell.isUncovered = true;
                             otherCell.isExploded = true;
                             user.disqualified = true; //// TODO: real var for this
-                        } else {
+                        } else if (otherCell.neighbouringMineCount === 0) {
+                            otherCell.isUncovered = true;
+                            otherCell.isFlagged = false;
+                            var cellCount = expandZeroedArrea(otherCell.x, otherCell.y);
+                            user.score += (cellCount + 1);
+                          }else {
                             user.score += 1;
                         }
                     }
                 }
                 if (user.disqualified) { //// TODO: use that var here
-                    disqualify(user,' just hit a mine.');
+                    disqualify(user,' just hit a mine. Somebody placed a bad flag.');
+                    for (var i = 0, l = neighbours.length; i < l; ++i) {
+                      var otherCell = neighbours[i];
+                      if (otherCell.isFlagged) otherCell.isFlagged = false; // removing all flags, becouse there are bad flags
+                    }
                 }
             }
             updateLeaderboard();
