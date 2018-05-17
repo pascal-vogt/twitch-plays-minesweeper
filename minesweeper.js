@@ -19,6 +19,51 @@
         var users = [];
         var firstDig = true;
 
+        // users can mix up the order of X and Y coordinates, we can now figure it out
+        function parseCoordinates(coordinateA, coordinateB) {
+            if (coordinateA.charCodeAt(0) <= 57) {
+                // numbers, letters
+                return {
+                    x: lettersToNumber(coordinateB),
+                    y: nh - 1 - parseInt(coordinateA, 10)
+                }
+            } else {
+                // letters, numbers
+                return {
+                    x: lettersToNumber(coordinateA),
+                    y: nh - 1 - parseInt(coordinateB, 10)
+                }
+            }
+        }
+
+        var AMOUNT_OF_LETTERS = 26;
+
+        function lettersToNumber(letterCoordinate) {
+            var i, l, code, result;
+            for (i = 0, l = letterCoordinate.length, result = 0; i < l; ++i) {
+                code = letterCoordinate.charCodeAt(i);
+                result *= AMOUNT_OF_LETTERS;
+                if (code >= 97) {
+                    result += (code - 97);
+                } else {
+                    result += (code - 65);
+                }
+            }
+            return result;
+        }
+
+        function numberToLetters(number) {
+            var a, b, charCodes;
+            charCodes = [];
+            do {
+                a = Math.floor(number / AMOUNT_OF_LETTERS);
+                b = (number - AMOUNT_OF_LETTERS * a);
+                charCodes.unshift(b + 65);
+                number = a;
+            } while (number);
+            return String.fromCharCode.apply(String, charCodes);
+        }
+
         function updateLeaderboard() {
             var contents = '';
             var leaderBoardNameList = document.getElementById('leaderboard-name-list');
@@ -65,20 +110,23 @@
         }
 
         function executeCommand(message, userTypingTheCommand) {
-            var r = /^!d(?:ig)?\s+(\d+)\s*,\s*(\d+)\s*$/;
+            var r = /^!d(?:ig)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
             var m = message.match(r);
             if (m) {
-                uncoverTile(parseInt(m[1], 10), nh - 1 - parseInt(m[2], 10), userTypingTheCommand);
+                var coordinates = parseCoordinates(m[1], m[2]);
+                uncoverTile(coordinates, userTypingTheCommand);
             }
-            r = /^!f(?:lag)?\s+(\d+)\s*,\s*(\d+)\s*$/;
+            r = /^!f(?:lag)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
             m = message.match(r);
             if (m) {
-                toggleFlag(parseInt(m[1], 10), nh - 1 - parseInt(m[2], 10), userTypingTheCommand);
+                coordinates = parseCoordinates(m[1], m[2]);
+                toggleFlag(coordinates, userTypingTheCommand);
             }
-            r = /^!c(?:heck)?\s+(\d+)\s*,\s*(\d+)\s*$/;
+            r = /^!c(?:heck)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
             m = message.match(r);
             if (m) {
-                checkNumber(parseInt(m[1], 10), nh - 1 - parseInt(m[2], 10), userTypingTheCommand);
+                coordinates = parseCoordinates(m[1], m[2]);
+                checkNumber(coordinates, userTypingTheCommand);
             }
             r = /^!s(?:tatus)?\s*$/;
             m = message.match(r);
@@ -96,40 +144,41 @@
                 r = /^!revive (\S+)\s*$/;
                 m = message.match(r);
                 if (m) {
-                    revive(m[1]);
+                    // make sure it is lower case as twitch user names are always lower case (the display name might not be)
+                    revive(m[1].toLowerCase());
                 }
             }
         }
 
         function revive(userName){
-          var toBeRevived = locateUser(userName.toLowerCase(), false); // FIXME: quick fix for case diffrence of twitch chat and IRC
-          if (toBeRevived) {
-              sentMessageToChat('Reviving ' + toBeRevived.userName);
-              toBeRevived.disqualified = false;
-              toBeRevived.timeout = 0;
-              updateLeaderboard();
-              drawAllTheThings();
-          } else {
-              sentMessageToChat('User ' + userName + ' not found');
-          }
+            var toBeRevived = locateUser(userName, false);
+            if (toBeRevived) {
+                sentMessageToChat('Reviving ' + toBeRevived.userName);
+                toBeRevived.disqualified = false;
+                toBeRevived.timeout = 0;
+                updateLeaderboard();
+                drawAllTheThings();
+            } else {
+                sentMessageToChat('User ' + userName + ' not found');
+            }
         }
 
         function disqualify(user, reason){
-          user.disqualified = true;
-          user.timeout = 10;
-          sentMessageToChat(user.userName + reason);
+            user.disqualified = true;
+            user.timeout = 10;
+            sentMessageToChat(user.userName + reason);
         }
 
         function reviveClock(){
-          for (var i = 0, l = users.length; i < l; ++i) {
-              if (users[i].disqualified) {
-                users[i].timeout--;
-                if (users[i].timeout<=0) {
-                  revive(users[i].userName);
+            for (var i = 0, l = users.length; i < l; ++i) {
+                if (users[i].disqualified) {
+                    users[i].timeout--;
+                    if (users[i].timeout<=0) {
+                        revive(users[i].userName);
+                    }
                 }
-              }
-          }
-          updateLeaderboard();
+            }
+            updateLeaderboard();
         }
 
         function getNeighbours(x, y) {
@@ -256,36 +305,37 @@
         }
 
         function initBoard(){
-          cellData = [];
-          firstDig = true;
-          for (var y = 0; y < nh; ++y) {
-              var cellDataLine = [];
-              cellData.push(cellDataLine);
-              for (var x = 0; x < nw; ++x) {
-                  cellDataLine.push({
-                      x: x,
-                      y: y,
-                      isMine: Math.random() < mineDensity,
-                      isExploded: false,
-                      isUncovered: false,
-                      neighbouringMineCount: 0,
-                      isFlagged: false
-                  });
-              }
-          }
+            var x, y;
+            cellData = [];
+            firstDig = true;
+            for (y = 0; y < nh; ++y) {
+                var cellDataLine = [];
+                cellData.push(cellDataLine);
+                for (x = 0; x < nw; ++x) {
+                    cellDataLine.push({
+                        x: x,
+                        y: y,
+                        isMine: Math.random() < mineDensity,
+                        isExploded: false,
+                        isUncovered: false,
+                        neighbouringMineCount: 0,
+                        isFlagged: false
+                    });
+                }
+            }
 
-          for (var y = 0; y < nh; ++y) {
-              for (var x = 0; x < nw; ++x) {
-                  var cell = cellData[y][x];
-                  if (!cell.isMine) {
-                      continue;
-                  }
-                  var neighbours = getNeighbours(x, y);
-                  for (var i = 0, l = neighbours.length; i < l; ++i) {
-                      ++neighbours[i].neighbouringMineCount;
-                  }
-              }
-          }
+            for (y = 0; y < nh; ++y) {
+                for (x = 0; x < nw; ++x) {
+                    var cell = cellData[y][x];
+                    if (!cell.isMine) {
+                        continue;
+                    }
+                    var neighbours = getNeighbours(x, y);
+                    for (var i = 0, l = neighbours.length; i < l; ++i) {
+                        ++neighbours[i].neighbouringMineCount;
+                    }
+                }
+            }
         }
 
 
@@ -468,26 +518,24 @@
                 ctx.lineTo(gridSize * (x + 0.5), axisWidth);
                 ctx.stroke();
                 ctx.closePath();
-                ctx.strokeText(x, gridSize * (x + 0.5), axisWidth * 0.4);
+                ctx.strokeText(numberToLetters(x), gridSize * (x + 0.5), axisWidth * 0.4);
 
                 ctx.beginPath();
                 ctx.moveTo(gridSize * (x + 0.5), (nh + 1) * gridSize);
                 ctx.lineTo(gridSize * (x + 0.5), (nh + 1) * gridSize + axisWidth * 0.2);
                 ctx.stroke();
                 ctx.closePath();
-                ctx.strokeText(x, gridSize * (x + 0.5), (nh + 1) * gridSize + axisWidth * 0.6);
+                ctx.strokeText(numberToLetters(x), gridSize * (x + 0.5), (nh + 1) * gridSize + axisWidth * 0.6);
             }
             ctx.restore();
             ctx.save();
             ctx.transform(1, 0, 0, 1, 0, axisWidth);
-            var alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","L","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
             for (var y = 0; y < nh; ++y) {
                 ctx.beginPath();
                 ctx.moveTo(axisWidth * 0.8, gridSize * (y + 0.5));
                 ctx.lineTo(axisWidth, gridSize * (y + 0.5));
                 ctx.stroke();
                 ctx.closePath();
-                //ctx.strokeText(alphabet[(nh - 1 - y)], axisWidth * 0.4, gridSize * (y + 0.5));
                 ctx.strokeText((nh - 1 - y), axisWidth * 0.4, gridSize * (y + 0.5));
 
                 ctx.beginPath();
@@ -495,7 +543,6 @@
                 ctx.lineTo((nw + 1) * gridSize + axisWidth * 0.2, gridSize * (y + 0.5));
                 ctx.stroke();
                 ctx.closePath();
-                //ctx.strokeText(alphabet[(nh - 1 - y)], (nw + 1) * gridSize + axisWidth * 0.6, gridSize * (y + 0.5));
                 ctx.strokeText((nh - 1 - y), (nw + 1) * gridSize + axisWidth * 0.6, gridSize * (y + 0.5));
 
             }
@@ -505,36 +552,42 @@
         function leftClick(event) {
             var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
             var mouseY = event.clientY - canvas.offsetTop - axisWidth;
-            var x = Math.floor(mouseX / gridSize);
-            var y = Math.floor(mouseY / gridSize);
-            uncoverTile(x, y, locateUser(STREAMER, true));
+            var coordinates = {
+                x: Math.floor(mouseX / gridSize),
+                y: Math.floor(mouseY / gridSize)
+            };
+            uncoverTile(coordinates, locateUser(STREAMER, true));
         }
 
-        function mmbClick(event) {// TODO: for some reason cant detect the action of MMB
+        function mmbClick(event) { // TODO: for some reason cant detect the action of MMB
             var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
             var mouseY = event.clientY - canvas.offsetTop - axisWidth;
-            var x = Math.floor(mouseX / gridSize);
-            var y = Math.floor(mouseY / gridSize);
-            check(x, y, locateUser(STREAMER, true));
+            var coordinates = {
+                x: Math.floor(mouseX / gridSize),
+                y: Math.floor(mouseY / gridSize)
+            };
+            checkNumber(coordinates, locateUser(STREAMER, true));
         }
 
         function rightClick(event) {
             var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
             var mouseY = event.clientY - canvas.offsetTop - axisWidth;
-            var x = Math.floor(mouseX / gridSize);
-            var y = Math.floor(mouseY / gridSize);
-            toggleFlag(x, y, locateUser(STREAMER, true));
+            var coordinates = {
+                x: Math.floor(mouseX / gridSize),
+                y: Math.floor(mouseY / gridSize)
+            };
+            toggleFlag(coordinates, locateUser(STREAMER, true));
         }
 
-        function uncoverTile(x, y, user) {
-            var cell = cellData[y][x];
+        function uncoverTile(coordinates, user) {
+            var cell = cellData[coordinates.y][coordinates.x];
             if (user.disqualified || cell.isUncovered) {
                 return;
             }
             if (cell.isMine) {
                 if (firstDig) { // if is 1st dig... make new board
                     initBoard();
-                    uncoverTile(x, y, user);
+                    uncoverTile(coordinates.x, coordinates.y, user);
                     return;
                 }
                 cell.isFlagged = false;
@@ -544,7 +597,7 @@
             } else if (cell.neighbouringMineCount === 0) {
                 cell.isUncovered = true;
                 cell.isFlagged = false;
-                var cellCount = expandZeroedArrea(x, y);
+                var cellCount = expandZeroedArea(coordinates);
                 user.score += (cellCount + 1);
             } else if (!cell.isUncovered) {
                 cell.isUncovered = true;
@@ -556,43 +609,44 @@
             drawAllTheThings();
         }
 
-        function checkNumber(x, y, user) {
-            var cell = cellData[y][x];
+        function checkNumber(coordinates, user) {
+            var otherCell, i, l, hitAMine = false;
+            var cell = cellData[coordinates.y][coordinates.x];
             if (user.disqualified || !cell.isUncovered) {
                 return;
             }
-            var neighbours = getNeighbours(x, y);
+            var neighbours = getNeighbours(coordinates.x, coordinates.y);
             var count = 0;
-            for (var i = 0, l = neighbours.length; i < l; ++i) {
-                var otherCell = neighbours[i];
+            for (i = 0, l = neighbours.length; i < l; ++i) {
+                otherCell = neighbours[i];
                 if ((otherCell.isMine && otherCell.isUncovered) || otherCell.isFlagged) {
                     count += 1;
                 }
             }
             if (count === cell.neighbouringMineCount) {
-                for (var i = 0, l = neighbours.length; i < l; ++i) {
-                    var otherCell = neighbours[i];
+                for (i = 0, l = neighbours.length; i < l; ++i) {
+                    otherCell = neighbours[i];
                     if (!otherCell.isUncovered && !otherCell.isFlagged) {
                         otherCell.isUncovered = true;
                         if (otherCell.isMine) {
                             otherCell.isUncovered = true;
                             otherCell.isExploded = true;
-                            user.disqualified = true; //// TODO: real var for this
+                            hitAMine = true;
                         } else if (otherCell.neighbouringMineCount === 0) {
                             otherCell.isUncovered = true;
                             otherCell.isFlagged = false;
-                            var cellCount = expandZeroedArrea(otherCell.x, otherCell.y);
+                            var cellCount = expandZeroedArea(otherCell.x, otherCell.y);
                             user.score += (cellCount + 1);
-                          }else {
+                        } else {
                             user.score += 1;
                         }
                     }
                 }
-                if (user.disqualified) { //// TODO: use that var here
-                    disqualify(user,' just hit a mine. Somebody placed a bad flag.');
-                    for (var i = 0, l = neighbours.length; i < l; ++i) {
-                      var otherCell = neighbours[i];
-                      if (otherCell.isFlagged) otherCell.isFlagged = false; // removing all flags, becouse there are bad flags
+                if (hitAMine) {
+                    hitAMine(user,' just hit a mine. Somebody placed a bad flag.');
+                    // removing all flags, because there are bad flags
+                    for (i = 0, l = neighbours.length; i < l; ++i) {
+                        neighbours[i].isFlagged = false;
                     }
                 }
             }
@@ -600,8 +654,8 @@
             drawAllTheThings();
         }
 
-        function toggleFlag(x, y, user) {
-            var cell = cellData[y][x];
+        function toggleFlag(coordinates, user) {
+            var cell = cellData[coordinates.y][coordinates.x];
             if (user.disqualified || cell.isUncovered) {
                 return;
             }
@@ -612,10 +666,12 @@
             }
         }
 
-        function expandZeroedArrea(x, y) {
+        function expandZeroedArea(coordinates) {
             var count = 0;
             var cell;
-            var listA = [cellData[y][x]];
+            var listA = [
+                cellData[coordinates.y][coordinates.x]
+            ];
             var listB;
             while (listA.length) {
                 listB = [];
@@ -642,6 +698,7 @@
 
         initData();
         drawAllTheThings();
-        var clock = setInterval(reviveClock ,1000); // init revice clock
+        // init revive clock
+        setInterval(reviveClock, 1000);
     });
 })();
