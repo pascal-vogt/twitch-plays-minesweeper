@@ -40,6 +40,14 @@
 
         function lettersToNumber(letterCoordinate) {
             var i, l, code, result;
+            var amountOfLetters = 1;
+            var combinationsFor1ToNMinusOneLetters = 0;
+            var combinationsForNLetter = AMOUNT_OF_LETTERS;
+            for (i = 1, l = letterCoordinate.length; i < l; ++i) {
+                ++amountOfLetters;
+                combinationsFor1ToNMinusOneLetters += combinationsForNLetter;
+                combinationsForNLetter *= AMOUNT_OF_LETTERS;
+            }
             for (i = 0, l = letterCoordinate.length, result = 0; i < l; ++i) {
                 code = letterCoordinate.charCodeAt(i);
                 result *= AMOUNT_OF_LETTERS;
@@ -49,18 +57,27 @@
                     result += (code - 65);
                 }
             }
-            return result;
+            return result + combinationsFor1ToNMinusOneLetters;
         }
 
         function numberToLetters(number) {
-            var a, b, charCodes;
+            var a, b, i, charCodes;
+            var amountOfLetters = 1;
+            var combinationsFor1ToNMinusOneLetters = 0;
+            var combinationsForNLetter = AMOUNT_OF_LETTERS;
+            while (combinationsFor1ToNMinusOneLetters + combinationsForNLetter < number + 1) {
+                ++amountOfLetters;
+                combinationsFor1ToNMinusOneLetters += combinationsForNLetter;
+                combinationsForNLetter *= AMOUNT_OF_LETTERS;
+            }
+            a = 0;
+            b = number - combinationsFor1ToNMinusOneLetters;
             charCodes = [];
-            do {
-                a = Math.floor(number / AMOUNT_OF_LETTERS);
-                b = (number - AMOUNT_OF_LETTERS * a);
-                charCodes.unshift(b + 65);
-                number = a;
-            } while (number);
+            for (i = 0; i < amountOfLetters; ++i) {
+                a = b % AMOUNT_OF_LETTERS;
+                b = (b - a) / AMOUNT_OF_LETTERS;
+                charCodes.unshift(a + 65);
+            }
             return String.fromCharCode.apply(String, charCodes);
         }
 
