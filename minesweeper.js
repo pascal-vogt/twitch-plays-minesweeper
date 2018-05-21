@@ -97,9 +97,9 @@
                 var user = users[i];
                 if (user.score > 0 || user.disqualified) {
                     // code to have button for revive.... nested function dosen't allow right now...
-                    //contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', <input id="RIP" type="button" value="rip" onclick="revive(\''+users[i].userName+'\');" />' : '') + ')</li>';
+                    //contents += '<li style="color:' + users[i].color + ';">' + users[i].displayName + ' (' + users[i].score + (users[i].disqualified ? ', <input id="RIP" type="button" value="rip" onclick="revive(\''+users[i].userName+'\');" />' : '') + ')</li>';
 
-                    contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', RIP['+users[i].timeout+']' : '') + ')</li>';
+                    contents += '<li style="color:' + users[i].color + ';">' + users[i].displayName + ' (' + users[i].score + (users[i].disqualified ? ', RIP['+users[i].timeout+']' : '') + ')</li>';
 
                 }
             }
@@ -118,7 +118,8 @@
                     score: 0,
                     disqualified: false,
                     timeout: 0,
-                    color: '#000000'
+                    color: '#000000',
+                    displayName: userName
                 });
                 return users[users.length - 1];
             } else {
@@ -198,7 +199,7 @@
         function revive(userName){
             var toBeRevived = locateUser(userName, false);
             if (toBeRevived) {
-                sentMessageToChat('Reviving ' + toBeRevived.userName);
+                sentMessageToChat('Reviving ' + toBeRevived.displayName);
                 toBeRevived.disqualified = false;
                 toBeRevived.timeout = 0;
                 updateLeaderboard();
@@ -211,7 +212,7 @@
         function disqualify(user, reason){
             user.disqualified = true;
             user.timeout = AUTO_REVIVE_TIME;
-            sentMessageToChat(user.userName + reason);
+            sentMessageToChat(user.displayName + reason);
         }
 
         function reviveClock(){
@@ -269,6 +270,10 @@
                             var colorRegexMatch = parsed.tags.match(/color=(#[0-9A-Fa-f]{6});/);
                             if (colorRegexMatch) {
                                 user.color = colorRegexMatch[1];
+                            }
+                            var displayNameRegexMatch = parsed.tags.match(/display-name=([^;]+);/);
+                            if (displayNameRegexMatch) {
+                                user.displayName = displayNameRegexMatch[1];
                             }
 
                             executeCommand(parsed.message, user);
@@ -390,7 +395,7 @@
         }
 
         function showStatus(userExecutingTheCommand) {
-            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
+            sentMessageToChat('Hello ' + userExecutingTheCommand.displayName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
         }
 
         function drawGrid() {
