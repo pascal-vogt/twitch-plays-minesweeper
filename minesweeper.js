@@ -126,6 +126,22 @@
             }
         }
 
+        function debugRevealAll() {
+            for (y = 0; y < nh; ++y) {
+                for (x = 0; x < nw; ++x) {
+                    cellData[y][x].isUncovered = true;
+                }
+            }
+        }
+
+        function debugHideAll() {
+            for (y = 0; y < nh; ++y) {
+                for (x = 0; x < nw; ++x) {
+                    cellData[y][x].isUncovered = false;
+                }
+            }
+        }
+
         function executeCommand(message, userTypingTheCommand) {
             var r = /^!d(?:ig)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             var m = message.match(r);
@@ -156,6 +172,18 @@
                 if (m) {
                     initData();
                     updateLeaderboard();
+                    drawAllTheThings();
+                }
+                r = /^!reveal\s*$/;
+                m = message.match(r);
+                if (m) {
+                    debugRevealAll();
+                    drawAllTheThings();
+                }
+                r = /^!hide\s*$/;
+                m = message.match(r);
+                if (m) {
+                    debugHideAll();
                     drawAllTheThings();
                 }
                 r = /^!revive (\S+)\s*$/;
