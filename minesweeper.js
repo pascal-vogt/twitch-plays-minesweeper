@@ -652,7 +652,7 @@
                         } else if (otherCell.neighbouringMineCount === 0) {
                             otherCell.isUncovered = true;
                             otherCell.isFlagged = false;
-                            var cellCount = expandZeroedArea(otherCell.x, otherCell.y);
+                            var cellCount = expandZeroedArea({x:otherCell.x, y:otherCell.y});
                             user.score += (cellCount + 1);
                         } else {
                             user.score += 1;
