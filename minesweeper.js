@@ -127,22 +127,22 @@
         }
 
         function executeCommand(message, userTypingTheCommand) {
-            var r = /^!d(?:ig)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
+            var r = /^!d(?:ig)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             var m = message.match(r);
             if (m) {
-                var coordinates = parseCoordinates(m[1], m[2]);
+                var coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 uncoverTile(coordinates, userTypingTheCommand);
             }
-            r = /^!f(?:lag)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
+            r = /^!f(?:lag)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             m = message.match(r);
             if (m) {
-                coordinates = parseCoordinates(m[1], m[2]);
+                coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 toggleFlag(coordinates, userTypingTheCommand);
             }
-            r = /^!c(?:heck)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
+            r = /^!c(?:heck)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             m = message.match(r);
             if (m) {
-                coordinates = parseCoordinates(m[1], m[2]);
+                coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 checkNumber(coordinates, userTypingTheCommand);
             }
             r = /^!s(?:tatus)?\s*$/;
@@ -182,7 +182,7 @@
 
         function disqualify(user, reason){
             user.disqualified = true;
-            user.timeout = 10;
+            user.timeout = AUTO_REVIVE_TIME;
             sentMessageToChat(user.userName + reason);
         }
 
@@ -190,7 +190,7 @@
             for (var i = 0, l = users.length; i < l; ++i) {
                 if (users[i].disqualified) {
                     users[i].timeout--;
-                    if (users[i].timeout<=0) {
+                    if (users[i].timeout <= 0) {
                         revive(users[i].userName);
                     }
                 }
