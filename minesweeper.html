@@ -1,38 +1,33 @@
 <html>
     <head>
-        <style>
-body {
-    font-family: "LM Mono 12";
-    background-color: white;
-    color: #101010;
-}
-ul {
-    list-style: none;
-    padding: 0;
-}
-h1, h2 {
-    padding: 0;
-    margin: 0;
-}
-#game, #leaderboard {
-    display: inline-block;
-    vertical-align: text-top;
-}
-        </style>
+        <link rel = "stylesheet"
+         type = "text/css"
+         href = "main.css" />
         <script src="config.js"></script>
         <script src="minesweeper.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
     </head>
     <body>
         <h1>Chat based Minesweeper <span id="size-text"></span></h1>
         <canvas id="game" width="520" height="520"></canvas>
         <div id="leaderboard">
+          <div class="mines">
             <h2>Mines</h2>
-            <span>Flagged: </span><span id='flags'></span><br>
-            <span>Exploded: </span><span id='explodMines'></span><br>
-            <span>Hidden: </span><span id='mines'></span>
+            <table>
+              <tr><td>Flagged</td><td><span id='flags'></span></td></tr>
+              <tr><td>Exploded</td><td><span id='explodMines'></span></td></tr>
+              <tr><td>Hidden</td><td><span id='mines'></span></td></tr>
+            </table>
+
+          </div>
+
+          <div class="subleaderboard">
             <h2>Leaderboard</h2>
             <ul id="leaderboard-name-list">
             </ul>
+          </div>
+
+          <div class="commands">
             <h2>Command examples</h2>
             <ul>
                 <li>!dig A7</li>
@@ -41,11 +36,16 @@ h1, h2 {
                 <li>!status</li>
                 <li id="offline-command-container"><input id="offline-command-field" /></li>
             </ul>
+          </div>
         </div>
-        <p>
-                Uncovering tiles that don't have mines gives you points. Uncovering a mine makes you lose but you keep your points.
-
-                Placing flags doesn't influence the score (yet).
-        </p>
+        <div class="rules">
+          <h3>Rules</h3>
+          <p>
+            Uncovering tiles that don't have mines gives you points. <br />
+            Uncovering a mine makes you lose but you keep your points. <br />
+            Placing flags doesn't influence the score (yet). <br />
+          </p>
+        </div>
+      </div>
     </body>
 </html>
