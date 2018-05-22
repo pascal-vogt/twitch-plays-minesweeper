@@ -18,6 +18,8 @@
         var cellData = [];
         var users = [];
         var flags = 0;
+        var mines = 0;
+        var explodMines = 0;
         var firstDig = true;
 
         // users can mix up the order of X and Y coordinates, we can now figure it out
@@ -352,14 +354,21 @@
         function initData() {
             initBoard();          // make new gameboard
             users = [];           // clear leaderboard
-            flags = 0;            // set placed flags 0
+            flags = 0;            // new board no flags
+            explodMines = 0;      // new board no exploded mines
             updateLeaderboard();  // draw leaderboard area
+
+            // fill in game stats
+            document.getElementById('flags').innerHTML = flags;
+            document.getElementById('explodMines').innerHTML = explodMines;
+            document.getElementById('mines').innerHTML = mines - (flags + explodMines);
         }
 
         function initBoard(){
             var x, y;
             cellData = [];
             firstDig = true;
+            mines = 0; // we have 0 mines on the field
             for (y = 0; y < nh; ++y) {
                 var cellDataLine = [];
                 cellData.push(cellDataLine);
@@ -383,12 +392,14 @@
                     if (!cell.isMine) {
                         continue;
                     }
+                    mines++;
                     var neighbours = getNeighbours(x, y);
                     for (var i = 0, l = neighbours.length; i < l; ++i) {
                         ++neighbours[i].neighbouringMineCount;
                     }
                 }
             }
+            console.log(mines);
         }
 
 
@@ -644,8 +655,7 @@
                     uncoverTile(coordinates.x, coordinates.y, user);
                     return;
                 }
-                cell.isUncovered = true;
-                cell.isExploded = true;
+                explodMine(cell.coordinates);
                 disqualify(user,' just hit a mine.');
             } else if (cell.neighbouringMineCount === 0) {
                 cell.isUncovered = true;
@@ -680,8 +690,7 @@
                     if (!otherCell.isUncovered && !otherCell.isFlagged) {
                         otherCell.isUncovered = true;
                         if (otherCell.isMine) {
-                            otherCell.isUncovered = true;
-                            otherCell.isExploded = true;
+                            explodMine(otherCell.coordinates);
                             hitAMine = true;
                         } else if (otherCell.neighbouringMineCount === 0) {
                             otherCell.isUncovered = true;
@@ -713,7 +722,7 @@
             if (!cell.isUncovered) {
                 (cell.isFlagged) ? flags-- : flags++;
                 document.getElementById('flags').innerHTML = flags;
-
+                document.getElementById('mines').innerHTML = mines - (flags + explodMines);
                 cell.isFlagged = !cell.isFlagged;
                 drawAllTheThings();
                 event.preventDefault();
@@ -725,10 +734,20 @@
           if (!cell.isUncovered && cell.isFlagged) {
               flags--;
               document.getElementById('flags').innerHTML = flags;
+              document.getElementById('mines').innerHTML = mines - (flags + explodMines);
               cell.isFlagged = false;
               drawAllTheThings();
               event.preventDefault();
           }
+        }
+
+        function explodMine(coordinates){
+          var cell = cellData[coordinates.y][coordinates.x];
+          cell.isUncovered = true;
+          cell.isExploded = true;
+          explodMines++;
+          document.getElementById('explodMines').innerHTML = explodMines;
+          document.getElementById('mines').innerHTML = mines - (flags + explodMines);
         }
 
         function expandZeroedArea(coordinates) {
