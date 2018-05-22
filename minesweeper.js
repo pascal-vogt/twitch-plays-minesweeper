@@ -102,7 +102,7 @@
                     // code to have button for revive.... nested function dosen't allow right now...
                     //contents += '<li style="color:' + users[i].color + ';">' + users[i].displayName + ' (' + users[i].score + (users[i].disqualified ? ', <input id="RIP" type="button" value="rip" onclick="revive(\''+users[i].userName+'\');" />' : '') + ')</li>';
 
-                    contents += '<li style="color:' + users[i].color + ';">' + users[i].displayName + ' (' + users[i].score + (users[i].disqualified ? ', RIP['+users[i].timeout+']' : '') + ')</li>';
+                    contents += '<li style="color:' + user.color + ';">' + user.displayName + ' (' + user.score + ' points' + (user.deaths > 0 ? ', ' + user.deaths + ' deaths' : '') + (user.disqualified ? ', respawning in '+user.timeout+'s' : '') + ')</li>';
 
                 }
             }
@@ -411,7 +411,7 @@
         }
 
         function showStatus(userExecutingTheCommand) {
-            sentMessageToChat('Hello ' + userExecutingTheCommand.displayName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points and ' + userExecutingTheCommand.deaths +'deaths .');
+            sentMessageToChat('Hello ' + userExecutingTheCommand.displayName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points and ' + userExecutingTheCommand.deaths +' deaths.');
         }
 
         function drawGrid() {

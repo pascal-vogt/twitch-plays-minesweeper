@@ -1,5 +1,5 @@
 body {
-  font-family: "LM Mono 12";
+  font-family: "LM Mono 12", serif;
   background-color: white;
   color: #101010;
 }
@@ -34,7 +34,7 @@ table{
 }
 
 .mines, .subleaderboard, .commands {
-  padding 1em;
+  padding: 1em;
   margin: 1em;
   border: 2px solid darkred;
   text-align: center;
