@@ -371,7 +371,8 @@
                         isExploded: false,
                         isUncovered: false,
                         neighbouringMineCount: 0,
-                        isFlagged: false
+                        isFlagged: false,
+                        coordinates: {x:x, y:y}
                     });
                 }
             }
@@ -636,7 +637,7 @@
             if (user.disqualified || cell.isUncovered) {
                 return;
             }
-            removeFlag({x:cell.x, y:cell.y});
+            removeFlag(cell.coordinates);
             if (cell.isMine) {
                 if (firstDig) { // if is 1st dig... make new board
                     initBoard();
@@ -684,8 +685,8 @@
                             hitAMine = true;
                         } else if (otherCell.neighbouringMineCount === 0) {
                             otherCell.isUncovered = true;
-                            removeFlag({x:otherCell.x, y:otherCell.y});
-                            var cellCount = expandZeroedArea({x:otherCell.x, y:otherCell.y});
+                            removeFlag(otherCell.coordinates);
+                            var cellCount = expandZeroedArea(otherCell.coordinates);
                             user.score += (cellCount + 1);
                         } else {
                             user.score += 1;
@@ -696,7 +697,7 @@
                     disqualify(user,' just hit a mine. Somebody placed a bad flag.');
                     // removing all flags, because there are bad flags
                     for (i = 0, l = neighbours.length; i < l; ++i) {
-                        removeFlag({x:neighbours[i].x, y:neighbours[i].y});
+                        removeFlag(neighbours[i].coordinates);
                     }
                 }
             }
@@ -749,7 +750,7 @@
                         }
                         if (!cell.isUncovered) {
                             ++count;
-                            if (cell.isFlagged) removeFlag({x:cell.x, y:cell.y});
+                            if (cell.isFlagged) removeFlag(cell.coordinates);
                             cell.isUncovered = true;
                         }
                     }
