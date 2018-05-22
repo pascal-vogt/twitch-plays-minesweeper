@@ -9,8 +9,8 @@ Chat based minesweeper for usage in a Twitch stream
 - Use !reset in chat to reset the game
 - Use !revive username to revive a specific user 
 
-# Commands available to everyone
-- !dig x,y
-- !flag x,y
-- !check x,y
+# Example of commands available to everyone
+- !dig A7
+- !flag B5
+- !check C7
 - !status

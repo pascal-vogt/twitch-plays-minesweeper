@@ -98,9 +98,9 @@
                 var user = users[i];
                 if (user.score > 0 || user.disqualified) {
                     // code to have button for revive.... nested function dosen't allow right now...
-                    //contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', <input id="RIP" type="button" value="rip" onclick="revive(\''+users[i].userName+'\');" />' : '') + ')</li>';
+                    //contents += '<li style="color:' + users[i].color + ';">' + users[i].displayName + ' (' + users[i].score + (users[i].disqualified ? ', <input id="RIP" type="button" value="rip" onclick="revive(\''+users[i].userName+'\');" />' : '') + ')</li>';
 
-                    contents += '<li style="color:' + users[i].color + ';">' + users[i].userName + ' (' + users[i].score + (users[i].disqualified ? ', RIP['+users[i].timeout+']' : '') + ')</li>';
+                    contents += '<li style="color:' + users[i].color + ';">' + users[i].displayName + ' (' + users[i].score + (users[i].disqualified ? ', RIP['+users[i].timeout+']' : '') + ')</li>';
 
                 }
             }
@@ -119,7 +119,8 @@
                     score: 0,
                     disqualified: false,
                     timeout: 0,
-                    color: '#000000'
+                    color: '#000000',
+                    displayName: userName
                 });
                 return users[users.length - 1];
             } else {
@@ -127,23 +128,39 @@
             }
         }
 
+        function debugRevealAll() {
+            for (y = 0; y < nh; ++y) {
+                for (x = 0; x < nw; ++x) {
+                    cellData[y][x].isUncovered = true;
+                }
+            }
+        }
+
+        function debugHideAll() {
+            for (y = 0; y < nh; ++y) {
+                for (x = 0; x < nw; ++x) {
+                    cellData[y][x].isUncovered = false;
+                }
+            }
+        }
+
         function executeCommand(message, userTypingTheCommand) {
-            var r = /^!d(?:ig)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
+            var r = /^!d(?:ig)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             var m = message.match(r);
             if (m) {
-                var coordinates = parseCoordinates(m[1], m[2]);
+                var coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 uncoverTile(coordinates, userTypingTheCommand);
             }
-            r = /^!f(?:lag)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
+            r = /^!f(?:lag)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             m = message.match(r);
             if (m) {
-                coordinates = parseCoordinates(m[1], m[2]);
+                coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 toggleFlag(coordinates, userTypingTheCommand);
             }
-            r = /^!c(?:heck)?\s+(\d+|[a-zA-Z]+)\s*,\s*(\d+|[a-zA-Z]+)\s*$/;
+            r = /^!c(?:heck)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
             m = message.match(r);
             if (m) {
-                coordinates = parseCoordinates(m[1], m[2]);
+                coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 checkNumber(coordinates, userTypingTheCommand);
             }
             r = /^!s(?:tatus)?\s*$/;
@@ -159,6 +176,18 @@
                     updateLeaderboard();
                     drawAllTheThings();
                 }
+                r = /^!reveal\s*$/;
+                m = message.match(r);
+                if (m) {
+                    debugRevealAll();
+                    drawAllTheThings();
+                }
+                r = /^!hide\s*$/;
+                m = message.match(r);
+                if (m) {
+                    debugHideAll();
+                    drawAllTheThings();
+                }
                 r = /^!revive (\S+)\s*$/;
                 m = message.match(r);
                 if (m) {
@@ -171,7 +200,7 @@
         function revive(userName){
             var toBeRevived = locateUser(userName, false);
             if (toBeRevived) {
-                sentMessageToChat('Reviving ' + toBeRevived.userName);
+                sentMessageToChat('Reviving ' + toBeRevived.displayName);
                 toBeRevived.disqualified = false;
                 toBeRevived.timeout = 0;
                 updateLeaderboard();
@@ -183,15 +212,15 @@
 
         function disqualify(user, reason){
             user.disqualified = true;
-            user.timeout = 10;
-            sentMessageToChat(user.userName + reason);
+            user.timeout = AUTO_REVIVE_TIME;
+            sentMessageToChat(user.displayName + reason);
         }
 
         function reviveClock(){
             for (var i = 0, l = users.length; i < l; ++i) {
                 if (users[i].disqualified) {
                     users[i].timeout--;
-                    if (users[i].timeout<=0) {
+                    if (users[i].timeout <= 0) {
                         revive(users[i].userName);
                     }
                 }
@@ -242,6 +271,10 @@
                             var colorRegexMatch = parsed.tags.match(/color=(#[0-9A-Fa-f]{6});/);
                             if (colorRegexMatch) {
                                 user.color = colorRegexMatch[1];
+                            }
+                            var displayNameRegexMatch = parsed.tags.match(/display-name=([^;]+);/);
+                            if (displayNameRegexMatch) {
+                                user.displayName = displayNameRegexMatch[1];
                             }
 
                             executeCommand(parsed.message, user);
@@ -364,7 +397,7 @@
         }
 
         function showStatus(userExecutingTheCommand) {
-            sentMessageToChat('Hello ' + userExecutingTheCommand.userName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
+            sentMessageToChat('Hello ' + userExecutingTheCommand.displayName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
         }
 
         function drawGrid() {
