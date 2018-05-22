@@ -17,6 +17,7 @@
 
         var cellData = [];
         var users = [];
+        var flags = 0;
         var firstDig = true;
 
         // users can mix up the order of X and Y coordinates, we can now figure it out
@@ -318,6 +319,7 @@
         function initData() {
             initBoard();          // make new gameboard
             users = [];           // clear leaderboard
+            flags = 0;            // set placed flags 0
             updateLeaderboard();  // draw leaderboard area
         }
 
@@ -601,24 +603,22 @@
             if (user.disqualified || cell.isUncovered) {
                 return;
             }
+            removeFlag({x:cell.x, y:cell.y});
             if (cell.isMine) {
                 if (firstDig) { // if is 1st dig... make new board
                     initBoard();
                     uncoverTile(coordinates.x, coordinates.y, user);
                     return;
                 }
-                cell.isFlagged = false;
                 cell.isUncovered = true;
                 cell.isExploded = true;
                 disqualify(user,' just hit a mine.');
             } else if (cell.neighbouringMineCount === 0) {
                 cell.isUncovered = true;
-                cell.isFlagged = false;
                 var cellCount = expandZeroedArea(coordinates);
                 user.score += (cellCount + 1);
             } else if (!cell.isUncovered) {
                 cell.isUncovered = true;
-                cell.isFlagged = false;
                 user.score += 1;
             }
             firstDig = false;
@@ -651,7 +651,7 @@
                             hitAMine = true;
                         } else if (otherCell.neighbouringMineCount === 0) {
                             otherCell.isUncovered = true;
-                            otherCell.isFlagged = false;
+                            removeFlag({x:otherCell.x, y:otherCell.y});
                             var cellCount = expandZeroedArea({x:otherCell.x, y:otherCell.y});
                             user.score += (cellCount + 1);
                         } else {
@@ -660,10 +660,10 @@
                     }
                 }
                 if (hitAMine) {
-                    hitAMine(user,' just hit a mine. Somebody placed a bad flag.');
+                    disqualify(user,' just hit a mine. Somebody placed a bad flag.');
                     // removing all flags, because there are bad flags
                     for (i = 0, l = neighbours.length; i < l; ++i) {
-                        neighbours[i].isFlagged = false;
+                        removeFlag({x:neighbours[i].x, y:neighbours[i].y});
                     }
                 }
             }
@@ -677,10 +677,24 @@
                 return;
             }
             if (!cell.isUncovered) {
+                (cell.isFlagged) ? flags-- : flags++;
+                document.getElementById('flags').innerHTML = flags;
+
                 cell.isFlagged = !cell.isFlagged;
                 drawAllTheThings();
                 event.preventDefault();
             }
+        }
+
+        function removeFlag(coordinates){
+          var cell = cellData[coordinates.y][coordinates.x];
+          if (!cell.isUncovered && cell.isFlagged) {
+              flags--;
+              document.getElementById('flags').innerHTML = flags;
+              cell.isFlagged = false;
+              drawAllTheThings();
+              event.preventDefault();
+          }
         }
 
         function expandZeroedArea(coordinates) {
@@ -702,7 +716,7 @@
                         }
                         if (!cell.isUncovered) {
                             ++count;
-                            cell.isFlagged = false;
+                            if (cell.isFlagged) removeFlag({x:cell.x, y:cell.y});
                             cell.isUncovered = true;
                         }
                     }
