@@ -120,6 +120,7 @@
                     userName: userName,
                     score: 0,
                     disqualified: false,
+                    deaths: 0,
                     timeout: 0,
                     color: '#000000',
                     displayName: userName
@@ -215,6 +216,7 @@
         function disqualify(user, reason){
             user.disqualified = true;
             user.timeout = AUTO_REVIVE_TIME;
+            user.deaths++;
             sentMessageToChat(user.displayName + reason);
         }
 
@@ -409,7 +411,7 @@
         }
 
         function showStatus(userExecutingTheCommand) {
-            sentMessageToChat('Hello ' + userExecutingTheCommand.displayName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points.');
+            sentMessageToChat('Hello ' + userExecutingTheCommand.displayName + ' you are ' + (userExecutingTheCommand.disqualified ? 'dead for '+userExecutingTheCommand.timeout+' seconds' : 'alive') + ' and have ' + userExecutingTheCommand.score + ' points and ' + userExecutingTheCommand.deaths +'deaths .');
         }
 
         function drawGrid() {
