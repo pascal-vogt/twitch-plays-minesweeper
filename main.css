@@ -1,0 +1,51 @@
+body {
+  font-family: "LM Mono 12";
+  background-color: white;
+  color: #101010;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+h1, h2, h3 {
+  padding: 0.5em;
+  margin: 0;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 20px;
+}
+
+table{
+   margin: 10px auto;
+}
+
+#game, #leaderboard {
+  display: inline-block;
+  vertical-align: text-top;
+}
+
+#flags, #explodMines, #mines{
+  color: red;
+  background-color: black;
+  padding:0.1em;
+  font-size: 20px;
+  border: 2px solid grey;
+}
+
+.mines, .subleaderboard, .commands {
+  padding 1em;
+  margin: 1em;
+  border: 2px solid darkred;
+  text-align: center;
+  border-radius: 25px;
+}
+
+.rules {
+  margin: 1em;
+  padding-left: 1em;
+  text-align: left;
+  border: 2px solid grey;
+  max-width: 440px;
+  border-radius: 25px;
+}
