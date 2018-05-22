@@ -750,7 +750,18 @@
           document.getElementById('mines').innerHTML = mines - (flags + explodMines);
         }
 
-        function expandZeroedArea(coordinates) {
+        function isCompleated(){
+          for (y = 0; y < nh; ++y) {
+              for (x = 0; x < nw; ++x) {
+                  if (!(cellData[y][x].isUncovered || cellData[y][x].isMine)){
+                    return false;
+                  }
+              }
+          }
+          return true;
+        }
+
+        function expandZeroedArea(coordinates){
             var count = 0;
             var cell;
             var listA = [
