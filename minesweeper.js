@@ -147,19 +147,19 @@
         }
 
         function executeCommand(message, userTypingTheCommand) {
-            var r = /^!d(?:ig)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
+            var r = /^!d(?:ig)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
             var m = message.match(r);
             if (m) {
                 var coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 uncoverTile(coordinates, userTypingTheCommand);
             }
-            r = /^!f(?:lag)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
+            r = /^!f(?:lag)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
             m = message.match(r);
             if (m) {
                 coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
                 toggleFlag(coordinates, userTypingTheCommand);
             }
-            r = /^!c(?:heck)?\s+(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+))\s*$/;
+            r = /^!c(?:heck)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
             m = message.match(r);
             if (m) {
                 coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
@@ -655,7 +655,7 @@
                     uncoverTile(coordinates.x, coordinates.y, user);
                     return;
                 }
-                explodMine(cell.coordinates);
+                blowMineUp(cell.coordinates);
                 disqualify(user,' just hit a mine.');
             } else if (cell.neighbouringMineCount === 0) {
                 cell.isUncovered = true;
@@ -690,7 +690,7 @@
                     if (!otherCell.isUncovered && !otherCell.isFlagged) {
                         otherCell.isUncovered = true;
                         if (otherCell.isMine) {
-                            explodMine(otherCell.coordinates);
+                            blowMineUp(otherCell.coordinates);
                             hitAMine = true;
                         } else if (otherCell.neighbouringMineCount === 0) {
                             otherCell.isUncovered = true;
@@ -741,7 +741,7 @@
           }
         }
 
-        function explodMine(coordinates){
+        function blowMineUp(coordinates){
           var cell = cellData[coordinates.y][coordinates.x];
           cell.isUncovered = true;
           cell.isExploded = true;
