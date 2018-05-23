@@ -214,6 +214,13 @@
         }
 
         function disqualify(user, reason){
+            if (user.disqualified) {
+              user.timeout += Math.floor(AUTO_REVIVE_TIME/2);
+              /* maybe some other function to punish
+                if you are already blown up and
+                others get blown up by your bad flags
+              */
+            }
             user.disqualified = true;
             user.timeout = AUTO_REVIVE_TIME;
             user.deaths++;
@@ -354,23 +361,19 @@
         }
 
         function initData() {
-            initBoard();          // make new gameboard
             users = [];           // clear leaderboard
-            flags = 0;            // new board no flags
-            explodMines = 0;      // new board no exploded mines
+            initBoard();          // make new gameboard
             updateLeaderboard();  // draw leaderboard area
-
-            // fill in game stats
-            document.getElementById('flags').innerHTML = flags;
-            document.getElementById('explodMines').innerHTML = explodMines;
-            document.getElementById('mines').innerHTML = mines - (flags + explodMines);
+            updateStatus();       // draw Mines
         }
 
         function initBoard(){
             var x, y;
             cellData = [];
             firstDig = true;
-            mines = 0; // we have 0 mines on the field
+            mines = 0;            // new board no mines(yet)
+            flags = 0;            // new board no flags
+            explodMines = 0;      // new board no exploded mines
             for (y = 0; y < nh; ++y) {
                 var cellDataLine = [];
                 cellData.push(cellDataLine);
@@ -401,7 +404,6 @@
                     }
                 }
             }
-            console.log(mines);
         }
 
 
@@ -705,11 +707,18 @@
                     }
                 }
                 if (hitAMine) {
-                    disqualify(user,' just hit a mine. Somebody placed a bad flag.');
-                    // removing all flags, because there are bad flags
-                    for (i = 0, l = neighbours.length; i < l; ++i) {
-                        removeFlag(neighbours[i].coordinates);
-                    }
+                    sentMessageToChat(user.displayName + ' just hit a mine. Somebody placed a bad flag.');
+                }
+                // removing all flags, because there are bad flags
+                for (i = 0, l = neighbours.length; i < l; ++i) {
+                  var otherCell = neighbours[i];
+                  if (otherCell.isFlagged){
+                      if (otherCell.isMine) {
+                          locateUser(otherCell.flagBy,false).score++;
+                      } else {
+                          removeFlag(otherCell.coordinates);
+                      }
+                  }
                 }
             }
             updateLeaderboard();
@@ -721,11 +730,17 @@
             if (user.disqualified || cell.isUncovered) {
                 return;
             }
-            if (!cell.isUncovered) {
-                (cell.isFlagged) ? flags-- : flags++;
-                document.getElementById('flags').innerHTML = flags;
-                document.getElementById('mines').innerHTML = mines - (flags + explodMines);
-                cell.isFlagged = !cell.isFlagged;
+            if (!cell.isUncovered && !firstDig) {
+                if (cell.isFlagged) {
+                  cell.isFlagged = false;
+                  delete cell.flagBy;
+                  flags--;
+                }else{
+                  cell.isFlagged = true;
+                  cell.flagBy = user.userName;
+                  flags++;
+                }
+                updateStatus();
                 drawAllTheThings();
                 event.preventDefault();
             }
@@ -735,8 +750,9 @@
           var cell = cellData[coordinates.y][coordinates.x];
           if (!cell.isUncovered && cell.isFlagged) {
               flags--;
-              document.getElementById('flags').innerHTML = flags;
-              document.getElementById('mines').innerHTML = mines - (flags + explodMines);
+              updateStatus();
+              disqualify(locateUser(cell.flagBy, false)," got punished for bad flag.")
+              delete cell.flagBy;
               cell.isFlagged = false;
               drawAllTheThings();
               event.preventDefault();
@@ -748,6 +764,11 @@
           cell.isUncovered = true;
           cell.isExploded = true;
           explodMines++;
+          updateStatus();
+        }
+
+        function updateStatus(){
+          document.getElementById('flags').innerHTML = flags;
           document.getElementById('explodMines').innerHTML = explodMines;
           document.getElementById('mines').innerHTML = mines - (flags + explodMines);
         }
