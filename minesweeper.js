@@ -20,7 +20,10 @@
         var flags = 0;
         var mines = 0;
         var explodMines = 0;
-        var firstDig = true;
+        var gameStarted = true;
+        var gameTime = 0;
+        var clock;
+        var ws;
 
         // users can mix up the order of X and Y coordinates, we can now figure it out
         function parseCoordinates(coordinateA, coordinateB) {
@@ -29,13 +32,13 @@
                 return {
                     x: lettersToNumber(coordinateB),
                     y: nh - 1 - parseInt(coordinateA, 10)
-                }
+                };
             } else {
                 // letters, numbers
                 return {
                     x: lettersToNumber(coordinateA),
                     y: nh - 1 - parseInt(coordinateB, 10)
-                }
+                };
             }
         }
 
@@ -227,7 +230,14 @@
             sentMessageToChat(user.displayName + reason);
         }
 
-        function reviveClock(){
+        function gameClock(){
+          if (gameStarted) {
+            reviveTick();
+            timeTick();
+          }
+        }
+
+        function reviveTick(){
             for (var i = 0, l = users.length; i < l; ++i) {
                 if (users[i].disqualified) {
                     users[i].timeout--;
@@ -237,6 +247,19 @@
                 }
             }
             updateLeaderboard();
+
+        }
+
+        function timeTick(){
+            if (isCompleated()) {
+                // TODO: compleate animation or something
+                sentMessageToChat("Gmae has been compleate in " + gameTime + " seconds.");
+                clearInterval(clock); // don't want to get game compleate message every second
+                // players dead will stay dead
+            }else{
+                gameTime++;
+                document.getElementById('game-time').innerText = gameTime;
+            }
         }
 
         function getNeighbours(x, y) {
@@ -268,8 +291,8 @@
             return neighbours;
         }
 
-        if (CONNECT_TO_CHAT) {
-            var ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443/', 'irc');
+        function connectChat(){
+            ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443/', 'irc');
 
             ws.onmessage = function (message) {
                 if (message !== null) {
@@ -312,14 +335,6 @@
                 }
             };
             document.getElementById('offline-command-container').outerHTML = '';
-        } else {
-            document.getElementById('offline-command-field').addEventListener('keydown', function (ev) {
-                if (ev.keyCode === 13) {
-                    // the newline at the end is what we get from twitch chat too so we are better off
-                    // having a realistic imitation here to avoid discovering bugs in regexes later on
-                    executeCommand(ev.target.value + '\r\n', locateUser(STREAMER, true));
-                }
-            });
         }
 
         function sentMessageToChat(message) {
@@ -365,12 +380,14 @@
             initBoard();          // make new gameboard
             updateLeaderboard();  // draw leaderboard area
             updateStatus();       // draw Mines
+            clock = setInterval(gameClock, 1000); // init clock
         }
 
         function initBoard(){
             var x, y;
             cellData = [];
-            firstDig = true;
+            gameStarted = false;
+            gameTime = 0;         // game has not started
             mines = 0;            // new board no mines(yet)
             flags = 0;            // new board no flags
             explodMines = 0;      // new board no exploded mines
@@ -405,7 +422,6 @@
                 }
             }
         }
-
 
         function clearField() {
             ctx.fillStyle = 'white';
@@ -469,7 +485,7 @@
             ctx.closePath();
 
             ctx.fillStyle = 'white';
-            ctx.fillRect(gridSize * (x + 0.5) - 3, gridSize * (y + 0.5) - 3, 2, 2)
+            ctx.fillRect(gridSize * (x + 0.5) - 3, gridSize * (y + 0.5) - 3, 2, 2);
         }
 
         function drawCoveredCellAt(x, y) {
@@ -654,9 +670,9 @@
             }
             removeFlag(cell.coordinates);
             if (cell.isMine) {
-                if (firstDig) { // if is 1st dig... make new board
-                    initBoard();
-                    uncoverTile(coordinates.x, coordinates.y, user);
+                if (!gameStarted) {   // if game not started, mine wont kill
+                    initBoard();      // new board generated
+                    uncoverTile(coordinates.x, coordinates.y, user);  // new dig in same locatin
                     return;
                 }
                 blowMineUp(cell.coordinates);
@@ -669,7 +685,7 @@
                 cell.isUncovered = true;
                 user.score += 1;
             }
-            firstDig = false;
+            gameStarted = true; // seting game started
             updateLeaderboard();
             drawAllTheThings();
         }
@@ -711,7 +727,7 @@
                 }
                 // removing all flags, because there are bad flags
                 for (i = 0, l = neighbours.length; i < l; ++i) {
-                  var otherCell = neighbours[i];
+                  otherCell = neighbours[i];
                   if (otherCell.isFlagged){
                       if (otherCell.isMine) {
                           locateUser(otherCell.flagBy,false).score++;
@@ -730,7 +746,7 @@
             if (user.disqualified || cell.isUncovered) {
                 return;
             }
-            if (!cell.isUncovered && !firstDig) {
+            if (!cell.isUncovered && gameStarted) { // flags only on uncovered tiles and only if game has started
                 if (cell.isFlagged) {
                   cell.isFlagged = false;
                   delete cell.flagBy;
@@ -751,7 +767,7 @@
           if (!cell.isUncovered && cell.isFlagged) {
               flags--;
               updateStatus();
-              disqualify(locateUser(cell.flagBy, false)," got punished for bad flag.")
+              disqualify(locateUser(cell.flagBy, false)," got punished for bad flag.");
               delete cell.flagBy;
               cell.isFlagged = false;
               drawAllTheThings();
@@ -771,6 +787,7 @@
           document.getElementById('flags').innerHTML = flags;
           document.getElementById('explodMines').innerHTML = explodMines;
           document.getElementById('mines').innerHTML = mines - (flags + explodMines);
+          document.getElementById('game-time').innerText = gameTime;
         }
 
         function isCompleated(){
@@ -813,10 +830,18 @@
 
             return count;
         }
-
+        if (CONNECT_TO_CHAT) {
+            connectChat();
+        }else {
+            document.getElementById('offline-command-field').addEventListener('keydown', function (ev) {
+                if (ev.keyCode === 13) {
+                    // the newline at the end is what we get from twitch chat too so we are better off
+                    // having a realistic imitation here to avoid discovering bugs in regexes later on
+                    executeCommand(ev.target.value + '\r\n', locateUser(STREAMER, true));
+                }
+            });
+        }
         initData();
         drawAllTheThings();
-        // init revive clock
-        setInterval(reviveClock, 1000);
     });
 })();
