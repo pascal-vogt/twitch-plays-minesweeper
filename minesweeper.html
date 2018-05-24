@@ -1,52 +1,53 @@
 <html>
-    <head>
-        <link rel = "stylesheet"
-         type = "text/css"
-         href = "main.css" />
-        <script src="config.js"></script>
-        <script src="minesweeper.js"></script>
-        <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
-    </head>
-    <body>
-        <h1>Chat based Minesweeper <span id="size-text"></span></h1>
-        <canvas id="game" width="520" height="520"></canvas>
-        <div id="leaderboard">
-          <h2>Game time: <span id="game-time"></span></h2>
-          <div class="mines">
-            <h2>Mines</h2>
-            <table>
-              <tr><td>Flagged</td><td><span id='flags'></span></td></tr>
-              <tr><td>Exploded</td><td><span id='explodMines'></span></td></tr>
-              <tr><td>Hidden</td><td><span id='mines'></span></td></tr>
-            </table>
+<head>
+  <link rel = "stylesheet"
+        type = "text/css"
+        href = "main.css" />
+  <script src="config.js"></script>
+  <script src="minesweeper.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+</head>
+<body>
+<h1>Chat based Minesweeper <span id="size-text"></span></h1>
+<h2>Game time: <span id="game-time"></span></h2>
+<div id="contents">
+  <canvas id="game" width="520" height="520"></canvas>
+  <div id="gameinfo">
+    <div id="minesinfo">
+      <h2>Mines</h2>
+      <table>
+        <tr><td>Flagged</td><td><span id='flags'></span></td></tr>
+        <tr><td>Exploded</td><td><span id='explodMines'></span></td></tr>
+        <tr><td>Hidden</td><td><span id='mines'></span></td></tr>
+      </table>
 
-          </div>
+    </div>
 
-          <div class="subleaderboard">
-            <h2>Leaderboard</h2>
-            <ul id="leaderboard-name-list">
-            </ul>
-          </div>
-
-          <div class="commands">
-            <h2>Command examples</h2>
-            <ul>
-                <li>!dig A7</li>
-                <li>!flag C2</li>
-                <li>!check T7</li>
-                <li>!status</li>
-                <li id="offline-command-container"><input id="offline-command-field" /></li>
-            </ul>
-          </div>
-        </div>
-        <div class="rules">
-          <h3>Rules</h3>
-          <p>
-            Uncovering tiles that don't have mines gives you points. <br />
-            Uncovering a mine makes you lose but you keep your points. <br />
-            Placing flags doesn't influence the score (yet). <br />
-          </p>
-        </div>
-      </div>
-    </body>
+    <div id="leaderboard">
+      <h2>Leaderboard</h2>
+      <ul id="leaderboard-name-list">
+      </ul>
+    </div>
+  </div>
+  <div>
+    <div id="commands">
+      <h2>Commands</h2>
+      <ul>
+        <li>!dig A7</li>
+        <li>!flag C2</li>
+        <li>!check T7</li>
+        <li>!status</li>
+        <li id="offline-command-container"><input id="offline-command-field" /></li>
+      </ul>
+    </div>
+    <div id="rules">
+      <h2>Rules</h2>
+      <p>
+        Uncovering tiles that don't have mines gives you points. <br />
+        Uncovering a mine makes you lose but you keep your points. <br />
+      </p>
+    </div>
+  </div>
+</div>
+</body>
 </html>

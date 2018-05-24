@@ -2,6 +2,13 @@ body {
   font-family: "LM Mono 12", serif;
   background-color: white;
   color: #101010;
+  display: flex;
+  flex-direction: column;
+}
+
+#contents {
+  display: flex;
+  flex-direction: row;
 }
 
 ul {
@@ -17,12 +24,7 @@ h1, h2, h3 {
 }
 
 table{
-   margin: 10px auto;
-}
-
-#game, #leaderboard {
-  display: inline-block;
-  vertical-align: text-top;
+   margin: 10px 0;
 }
 
 #flags, #explodMines, #mines{
@@ -33,19 +35,20 @@ table{
   border: 2px solid grey;
 }
 
-.mines, .subleaderboard, .commands {
-  padding: 1em;
-  margin: 1em;
-  border: 2px solid darkred;
+#minesinfo h2, #leaderboard h2, #commands h2, #rules h2 {
   text-align: center;
-  border-radius: 25px;
 }
 
-.rules {
+#rules, #commands, #minesinfo, #leaderboard {
+  padding: 0.5em;
   margin: 1em;
-  padding-left: 1em;
-  text-align: left;
+  border-radius: 1em;
+}
+
+#minesinfo, #leaderboard {
+  border: 2px solid darkred;
+}
+
+#rules, #commands {
   border: 2px solid grey;
-  max-width: 440px;
-  border-radius: 25px;
 }
