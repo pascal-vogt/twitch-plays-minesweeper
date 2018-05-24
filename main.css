@@ -52,3 +52,8 @@ table{
 #rules, #commands {
   border: 2px solid grey;
 }
+
+#game {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
