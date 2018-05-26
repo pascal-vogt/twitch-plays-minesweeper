@@ -26,20 +26,19 @@
     var ws;
 
     // users can mix up the order of X and Y coordinates, we can now figure it out
-    function parseCoordinates(coordinateA, coordinateB) {
-      if (coordinateA.charCodeAt(0) <= 57) {
-        // numbers, letters
+    function parseCoordinates(coordinateNum, coordinateLetter) {
         return {
-          x: lettersToNumber(coordinateB),
-          y: nh - 1 - parseInt(coordinateA, 10)
+          y: parseNumberCord(coordinateNum),
+          x: parseLetterCord(coordinateLetter)
         };
-      } else {
-        // letters, numbers
-        return {
-          x: lettersToNumber(coordinateA),
-          y: nh - 1 - parseInt(coordinateB, 10)
-        };
-      }
+    }
+
+    function parseNumberCord(coordinate){
+      return nh - 1 - parseInt(coordinate, 10);
+    }
+
+    function parseLetterCord(coordinate){
+      return lettersToNumber(coordinate);
     }
 
     var AMOUNT_OF_LETTERS = 26;
@@ -151,22 +150,102 @@
     }
 
     function executeCommand(message, userTypingTheCommand) {
-      var r = /^!d(?:ig)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
+      var r = /^!d(?:ig)?\s+(?:(?:(\d+)(?:\-(\d+))?),?\s*(?:([a-zA-Z]+)(?:\-([a-zA-Z]+))?)|(?:([a-zA-Z]+)(?:\-([a-zA-Z]+))?),?\s*(\d+)(?:\-(\d+))?)\s*$/;
       var m = message.match(r);
+      var coordinates;
       if (m) {
-        var coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
-        uncoverTile(coordinates, userTypingTheCommand);
+        coordinates = parseCoordinates(m[1] || m[7], m[3] || m[5]);
+        if ((m[4] || m[6])&&(m[2] || m[8])) {
+          console.log("dont be that greedy");
+        } else {
+          if (m[4] || m[6]) {
+            // along letters = X
+            var change = parseLetterCord(m[4] || m[6]);
+            if (change < coordinates.x) {
+              while(change <= coordinates.x){
+                if (userTypingTheCommand.disqualified) break;
+                uncoverTile(coordinates, userTypingTheCommand);
+                coordinates.x--;
+              }
+            }else{
+              while(coordinates.x <= change){
+                if (userTypingTheCommand.disqualified) break;
+                uncoverTile(coordinates, userTypingTheCommand);
+                coordinates.x++;
+              }
+            }
+          }else if (m[2] || m[8]) {
+            // along Numbers = Y
+            var change = parseNumberCord(m[2] || m[8]);
+            if (change < coordinates.y) {
+              while(change <= coordinates.y){
+                if (userTypingTheCommand.disqualified) break;
+                uncoverTile(coordinates, userTypingTheCommand);
+                coordinates.y--;
+              }
+            }else{
+              while(coordinates.y <= change){
+                if (userTypingTheCommand.disqualified) break;
+                uncoverTile(coordinates, userTypingTheCommand);
+                coordinates.y++;
+              }
+            }
+          }else{
+            uncoverTile(coordinates, userTypingTheCommand);
+          }
+        }
+
       }
-      r = /^!f(?:lag)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
+      r = /^!f(?:lag)?\s+(?:(?:(\d+)(?:\-(\d+))?),?\s*(?:([a-zA-Z]+)(?:\-([a-zA-Z]+))?)|(?:([a-zA-Z]+)(?:\-([a-zA-Z]+))?),?\s*(\d+)(?:\-(\d+))?)\s*$/;
       m = message.match(r);
       if (m) {
-        coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
-        toggleFlag(coordinates, userTypingTheCommand);
+        coordinates = parseCoordinates(m[1] || m[7], m[3] || m[5]);
+        if ((m[4] || m[6])&&(m[2] || m[8])) {
+          console.log("dont be that greedy");
+        } else {
+          if (m[4] || m[6]) {
+            // along letters = X
+            var change = parseLetterCord(m[4] || m[6]);
+            if (change < coordinates.x) {
+              while(change <= coordinates.x){
+                if (userTypingTheCommand.disqualified) break;
+                toggleFlag(coordinates, userTypingTheCommand);
+                coordinates.x--;
+              }
+            }else{
+              while(coordinates.x <= change){
+                if (userTypingTheCommand.disqualified) break;
+                toggleFlag(coordinates, userTypingTheCommand);
+                coordinates.x++;
+              }
+            }
+          }else if (m[2] || m[8]) {
+            // along Numbers = Y
+            var change = parseNumberCord(m[2] || m[8]);
+            if (change < coordinates.y) {
+              while(change <= coordinates.y){
+                if (userTypingTheCommand.disqualified) break;
+                toggleFlag(coordinates, userTypingTheCommand);
+                coordinates.y--;
+              }
+            }else{
+              while(coordinates.y <= change){
+                if (userTypingTheCommand.disqualified) break;
+                toggleFlag(coordinates, userTypingTheCommand);
+                coordinates.y++;
+              }
+            }
+          }else{
+            toggleFlag(coordinates, userTypingTheCommand);
+          }
+        }
+
       }
+
       r = /^!c(?:heck)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
       m = message.match(r);
       if (m) {
-        coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
+        coordinates = parseCoordinates(m[2] || m[3], m[1] || m[4]);
         checkNumber(coordinates, userTypingTheCommand);
       }
       r = /^!s(?:tatus)?\s*$/;
