@@ -26,20 +26,19 @@
     var ws;
 
     // users can mix up the order of X and Y coordinates, we can now figure it out
-    function parseCoordinates(coordinateA, coordinateB) {
-      if (coordinateA.charCodeAt(0) <= 57) {
-        // numbers, letters
-        return {
-          x: lettersToNumber(coordinateB),
-          y: nh - 1 - parseInt(coordinateA, 10)
-        };
-      } else {
-        // letters, numbers
-        return {
-          x: lettersToNumber(coordinateA),
-          y: nh - 1 - parseInt(coordinateB, 10)
-        };
-      }
+    function parseCoordinates(coordinateLetter, coordinateNum) {
+      return {
+        x: parseLetterCord(coordinateLetter),
+        y: parseNumberCord(coordinateNum)
+      };
+    }
+
+    function parseNumberCord(coordinate){
+      return nh - 1 - parseInt(coordinate, 10);
+    }
+
+    function parseLetterCord(coordinate){
+      return lettersToNumber(coordinate);
     }
 
     var AMOUNT_OF_LETTERS = 26;
@@ -151,22 +150,22 @@
     }
 
     function executeCommand(message, userTypingTheCommand) {
-      var r = /^!d(?:ig)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
+      var r = /^!d(?:ig)??\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
       var m = message.match(r);
       if (m) {
-        var coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
+        coordinates = parseCoordinates(m[1] || m[4], m[2] || m[3]);
         uncoverTile(coordinates, userTypingTheCommand);
       }
       r = /^!f(?:lag)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
       m = message.match(r);
       if (m) {
-        coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
+        coordinates = parseCoordinates(m[1] || m[4], m[2] || m[3]);
         toggleFlag(coordinates, userTypingTheCommand);
       }
       r = /^!c(?:heck)?\s+(?:(?:([a-zA-Z]+)\s*,?\s*(\d+))|(?:(\d+)\s*,?\s*([a-zA-Z]+)))\s*$/;
       m = message.match(r);
       if (m) {
-        coordinates = parseCoordinates(m[1] || m[3], m[2] || m[4]);
+        coordinates = parseCoordinates(m[1] || m[4], m[2] || m[3]);
         checkNumber(coordinates, userTypingTheCommand);
       }
       r = /^!s(?:tatus)?\s*$/;
