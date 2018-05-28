@@ -243,7 +243,7 @@
       }
     }
 
-    function disqualify(user, reason){
+    function disqualifyUser(user, reason){
       if (user.disqualified) {
         user.timeout += Math.floor(AUTO_REVIVE_TIME / 2);
         /* maybe some other function to punish
@@ -759,7 +759,7 @@
       if (user.disqualified || cell.isUncovered) {
         return;
       }
-      removeFlag(cell.coordinates);
+      removeFlag(cell.coordinates,false);
       if (cell.isMine) {
         if (!gameStarted) {   // if game not started, mine wont kill
           initBoard();      // new board generated
@@ -767,7 +767,7 @@
           return;
         }
         blowMineUp(cell.coordinates);
-        disqualify(user,' just hit a mine.');
+        disqualifyUser(user,' just hit a mine.');
       } else if (cell.neighbouringMineCount === 0) {
         cell.isUncovered = true;
         var cellCount = expandZeroedArea(coordinates);
@@ -809,7 +809,7 @@
               hitAMine = true;
             } else if (otherCell.neighbouringMineCount === 0) {
               otherCell.isUncovered = true;
-              removeFlag(otherCell.coordinates);
+              removeFlag(otherCell.coordinates,true);
               var cellCount = expandZeroedArea(otherCell.coordinates);
               user.score += cellCount;
             } else {
@@ -828,7 +828,7 @@
               otherCell.isUncovered = true;
               locateUser(otherCell.flagBy, false).score++;
             } else {
-              removeFlag(otherCell.coordinates);
+              removeFlag(otherCell.coordinates,true);
             }
           }
         }
@@ -857,12 +857,12 @@
       }
     }
 
-    function removeFlag(coordinates){
+    function removeFlag(coordinates, disqualify){
       var cell = cellData[coordinates.y][coordinates.x];
       if (!cell.isUncovered && cell.isFlagged) {
         flags--;
         updateStatus();
-        disqualify(locateUser(cell.flagBy, false)," got punished for bad flag.");
+        if (disqualify) disqualifyUser(locateUser(cell.flagBy, false)," got punished for bad flag.");
         delete cell.flagBy;
         cell.isFlagged = false;
         drawAllTheThings();
@@ -916,7 +916,7 @@
             if (!cell.isUncovered) {
               ++count;
               if (cell.isFlagged) {
-                removeFlag(cell.coordinates);
+                removeFlag(cell.coordinates,true);
               }
               cell.isUncovered = true;
             }
