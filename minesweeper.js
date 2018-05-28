@@ -177,9 +177,7 @@
         r = /^!reset\s*$/;
         m = message.match(r);
         if (m) {
-          initData();
-          updateLeaderboard();
-          drawAllTheThings();
+          resetGame();
         }
         r = /^!reveal\s*$/;
         m = message.match(r);
@@ -200,6 +198,13 @@
           revive(m[1].toLowerCase());
         }
       }
+    }
+
+    function resetGame(){
+      initData();
+      updateLeaderboard();
+      drawAllTheThings();
+      sentMessageToChat("Game has been reset.");
     }
 
     function revive(userName){
@@ -256,6 +261,15 @@
         sentMessageToChat("Game has been completed in " + gameTime + " seconds.");
         clearInterval(clock); // don't want to get game compleate message every second
         // players dead will stay dead
+        var timeTillReset = 5 + AUTO_GAME_RESET_TIME; // maybe there is more elegant solution
+        var resetClock = setInterval(function(){
+          timeTillReset -= 5;
+          sentMessageToChat("Time till reset: " + timeTillReset + " seconds.");
+          if (timeTillReset == 0) {
+            clearInterval(resetClock);
+            resetGame();
+          }
+        },5000);
       } else{
         gameTime++;
         document.getElementById('game-time').innerText = gameTime;
