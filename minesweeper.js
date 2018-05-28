@@ -280,19 +280,32 @@
 
     function timeTick(){
       if (isCompleted()) {
-        // TODO: compleate animation or something
+        // TODO: make it do maybe something more intresting
+        var drawing = new Image();
+        drawing.src = "happy_face.png";
+        drawing.onload = function() {
+          for (var i = 1; i <= nw; i++) {
+            for (var j = 1; j <= nh; j++) {
+              ctx.drawImage(drawing,(i + 0.1) * gridSize,(j + 0.1) * gridSize );
+            }
+          }
+        };
+
         sentMessageToChat("Game has been completed in " + gameTime + " seconds.");
         clearInterval(clock); // don't want to get game compleate message every second
         // players dead will stay dead
-        var timeTillReset = 5 + AUTO_GAME_RESET_TIME; // maybe there is more elegant solution
+        var timeTillReset = AUTO_GAME_RESET_TIME; // maybe there is more elegant solution
         var resetClock = setInterval(function(){
-          timeTillReset -= 5;
-          sentMessageToChat("Time till reset: " + timeTillReset + " seconds.");
           if (timeTillReset == 0) {
             clearInterval(resetClock);
             resetGame();
+          }else{
+            if (timeTillReset%5 == 0) {
+              sentMessageToChat("Time till reset: " + timeTillReset + " seconds.");
+            }
           }
-        },5000);
+          timeTillReset--;
+        },1000);
       } else{
         gameTime++;
         document.getElementById('game-time').innerText = gameTime;
@@ -671,33 +684,24 @@
     }
 
     function leftClick(event) {
-      var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
-      var mouseY = event.clientY - canvas.offsetTop - axisWidth;
-      var coordinates = {
-        x: Math.floor(mouseX / gridSize),
-        y: Math.floor(mouseY / gridSize)
-      };
-      uncoverTile(coordinates, locateUser(STREAMER, true));
+      uncoverTile(mouseEventToCoordinates(event), locateUser(STREAMER, true));
     }
 
-    function mmbClick(event) { // TODO: for some reason cant detect the action of MMB
-      var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
-      var mouseY = event.clientY - canvas.offsetTop - axisWidth;
-      var coordinates = {
-        x: Math.floor(mouseX / gridSize),
-        y: Math.floor(mouseY / gridSize)
-      };
-      checkNumber(coordinates, locateUser(STREAMER, true));
+    function mmbClick(event) {
+      checkNumber(mouseEventToCoordinates(event), locateUser(STREAMER, true));
     }
 
     function rightClick(event) {
+      toggleFlag(mouseEventToCoordinates(event), locateUser(STREAMER, true));
+    }
+
+    function mouseEventToCoordinates(event){
       var mouseX = event.clientX - canvas.offsetLeft - axisWidth;
       var mouseY = event.clientY - canvas.offsetTop - axisWidth;
-      var coordinates = {
+      return {
         x: Math.floor(mouseX / gridSize),
         y: Math.floor(mouseY / gridSize)
       };
-      toggleFlag(coordinates, locateUser(STREAMER, true));
     }
 
     function uncoverTile(coordinates, user) {
@@ -831,6 +835,7 @@
     }
 
     function isCompleted(){
+      // also is triggered by debug command !reveal
       for (y = 0; y < nh; ++y) {
         for (x = 0; x < nw; ++x) {
           if (!(cellData[y][x].isUncovered || cellData[y][x].isMine)){
@@ -872,6 +877,7 @@
 
       return count;
     }
+
     if (CONNECT_TO_CHAT) {
       connectChat();
     }else {
@@ -883,6 +889,7 @@
         }
       });
     }
+
     initData();
     drawAllTheThings();
   });
