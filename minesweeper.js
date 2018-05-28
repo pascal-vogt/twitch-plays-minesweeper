@@ -8,9 +8,9 @@
 
     canvas.addEventListener('mousedown',function(event){
       mouseDown = true;
-      if (event.button == 0)  leftDown = true;
-      if (event.button == 1)  mmbDown = true;
-      if (event.button == 2)  rightDown = true;
+      if (event.button === 0)  leftDown = true;
+      if (event.button === 1)  mmbDown = true;
+      if (event.button === 2)  rightDown = true;
     });
 
     canvas.addEventListener('mouseup',function(event){
@@ -18,13 +18,13 @@
         mouseDown = false;
         if (rightDown && leftDown){
           mmbClick(event);
-        } else if (event.button == 0) leftClick(event);
-          else if (event.button == 1) mmbClick(event);
-          else if (event.button == 2) rightClick(event);
+        } else if (event.button === 0) leftClick(event);
+          else if (event.button === 1) mmbClick(event);
+          else if (event.button === 2) rightClick(event);
       }
-      if (event.button == 0)  leftDown = false;
-      if (event.button == 1)  mmbDown = false;
-      if (event.button == 2)  rightDown = false;
+      if (event.button === 0)  leftDown = false;
+      if (event.button === 1)  mmbDown = false;
+      if (event.button === 2)  rightDown = false;
     });
 
     var ctx = canvas.getContext('2d');
@@ -280,32 +280,82 @@
 
     function timeTick(){
       if (isCompleted()) {
-        // TODO: make it do maybe something more intresting
-        var drawing = new Image();
-        drawing.src = "happy_face.png";
-        drawing.onload = function() {
-          for (var i = 1; i <= nw; i++) {
-            for (var j = 1; j <= nh; j++) {
-              ctx.drawImage(drawing,(i + 0.1) * gridSize,(j + 0.1) * gridSize );
-            }
+        var timeTillReset = AUTO_GAME_RESET_TIME; // maybe there is more elegant solution
+
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, width, height);
+        var fireworkParticles = [];
+        var gravity = 0.0000005 * height;
+        var lastTime = performance.now();
+        requestAnimationFrame(function winAnimation() {
+          var time = performance.now();
+          var elapsed = (time - lastTime);
+          lastTime = time;
+          if (fireworkParticles.length === 0) {
+            fireworkParticles.push({
+              birth: time,
+              color: 'white',
+              type: 0,
+              x: width * 0.5,
+              y: height,
+              dx: width *   0.0008 * (Math.random() - 0.5),
+              dy: -height * 0.0008 * (0.6 + 0.4 * Math.random()),
+              ddx: 0,
+              ddy: gravity
+            });
           }
-        };
+          for (var i = fireworkParticles.length - 1; i >= 0; --i) {
+            var particle = fireworkParticles[i];
+            if (time - particle.birth > 1000) {
+              fireworkParticles.splice(i, 1);
+              if (particle.type === 0) {
+                for (var j = 9; j >= 0; --j) {
+                  var angle = Math.random() * Math.PI;
+                  fireworkParticles.push({
+                    birth: time,
+                    color: Math.random() < 0.5 ? 'red' : 'orange',
+                    type: 1,
+                    x: particle.x,
+                    y: particle.y,
+                    dx: width *   0.0005 * Math.cos(angle),
+                    dy: -height * 0.0005 * Math.sin(angle),
+                    ddx: 0,
+                    ddy: gravity
+                  })
+                }
+              }
+              continue;
+            }
+            ctx.strokeStyle = particle.color;
+            ctx.beginPath();
+            ctx.moveTo(particle.x, particle.y);
+            particle.x += particle.dx * elapsed;
+            particle.dx += particle.ddx * elapsed;
+            particle.y += particle.dy * elapsed;
+            particle.dy += particle.ddy * elapsed;
+            ctx.lineTo(particle.x, particle.y);
+            ctx.stroke();
+          }
+
+          if (timeTillReset > 0) {
+            requestAnimationFrame(winAnimation);
+          }
+        });
 
         sentMessageToChat("Game has been completed in " + gameTime + " seconds.");
-        clearInterval(clock); // don't want to get game compleate message every second
+        clearInterval(clock); // don't want to get game complete message every second
         // players dead will stay dead
-        var timeTillReset = AUTO_GAME_RESET_TIME; // maybe there is more elegant solution
         var resetClock = setInterval(function(){
-          if (timeTillReset == 0) {
+          if (timeTillReset === 0) {
             clearInterval(resetClock);
             resetGame();
-          }else{
-            if (timeTillReset%5 == 0) {
+          } else{
+            if (timeTillReset % 5 === 0) {
               sentMessageToChat("Time till reset: " + timeTillReset + " seconds.");
             }
           }
           timeTillReset--;
-        },1000);
+        }, 1000);
       } else{
         gameTime++;
         document.getElementById('game-time').innerText = gameTime;
