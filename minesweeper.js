@@ -1,8 +1,32 @@
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
     var canvas = document.getElementById('game');
-    canvas.addEventListener('click', leftClick);
-    canvas.addEventListener('contextmenu', rightClick);
+    var mouseDown = false;
+    var rightDown = false;
+    var mmbDown = false;
+    var leftDown = false;
+
+    canvas.addEventListener('mousedown',function(event){
+      mouseDown = true;
+      if (event.button == 0)  leftDown = true;
+      if (event.button == 1)  mmbDown = true;
+      if (event.button == 2)  rightDown = true;
+    });
+
+    canvas.addEventListener('mouseup',function(event){
+      if(mouseDown){
+        mouseDown = false;
+        if (rightDown && leftDown){
+          mmbClick(event);
+        } else if (event.button == 0) leftClick(event);
+          else if (event.button == 1) mmbClick(event);
+          else if (event.button == 2) rightClick(event);
+      }
+      if (event.button == 0)  leftDown = false;
+      if (event.button == 1)  mmbDown = false;
+      if (event.button == 2)  rightDown = false;
+    });
+
     var ctx = canvas.getContext('2d');
 
     var width = canvas.width;
@@ -25,7 +49,6 @@
     var clock;
     var ws;
 
-    // users can mix up the order of X and Y coordinates, we can now figure it out
     function parseCoordinates(coordinateLetter, coordinateNum) {
       return {
         x: parseLetterCord(coordinateLetter),
@@ -777,7 +800,6 @@
         }
         updateStatus();
         drawAllTheThings();
-        event.preventDefault();
       }
     }
 
@@ -790,7 +812,6 @@
         delete cell.flagBy;
         cell.isFlagged = false;
         drawAllTheThings();
-        event.preventDefault();
       }
     }
 
