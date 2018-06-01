@@ -46,7 +46,7 @@
     var explodMines = 0;
     var gameStarted = true;
     var gameTime = 0;
-    var clock;
+    var gameClockInterval;
     var ws;
 
     function parseCoordinates(coordinateLetter, coordinateNum) {
@@ -343,11 +343,14 @@
         });
 
         sentMessageToChat("Game has been completed in " + gameTime + " seconds.");
-        clearInterval(clock); // don't want to get game complete message every second
+        if (gameClockInterval) {
+          clearInterval(gameClockInterval); // don't want to get game complete message every second
+          gameClockInterval = null;
+        }
         // players dead will stay dead
-        var resetClock = setInterval(function(){
+        var resetClockInterval = setInterval(function resetClock(){
           if (timeTillReset === 0) {
-            clearInterval(resetClock);
+            clearInterval(resetClockInterval);
             resetGame();
           } else{
             if (timeTillReset % 5 === 0) {
@@ -358,8 +361,20 @@
         }, 1000);
       } else{
         gameTime++;
-        document.getElementById('game-time').innerText = gameTime;
+        document.getElementById('game-time').innerText = formatGameTime(gameTime);
       }
+    }
+
+    function formatGameTime(gameTime) {
+      var h, m, s;
+      h = Math.floor(gameTime / 360);
+      m = Math.floor(gameTime / 60) % 60;
+      s = gameTime % 60;
+      return formatDigits(h) + ':' + formatDigits(m) + ':' + formatDigits(s);
+    }
+
+    function formatDigits(d) {
+      return (d > 9 ? '' : '0') + d;
     }
 
     function getNeighbours(x, y) {
@@ -480,7 +495,9 @@
       initBoard();          // make new gameboard
       updateLeaderboard();  // draw leaderboard area
       updateStatus();       // draw Mines
-      clock = setInterval(gameClock, 1000); // init clock
+      if (!gameClockInterval) {
+        gameClockInterval = setInterval(gameClock, 1000); // init clock
+      }
     }
 
     function initBoard() {
@@ -881,7 +898,7 @@
       document.getElementById('flags').innerHTML = flags;
       document.getElementById('explodMines').innerHTML = explodMines;
       document.getElementById('mines').innerHTML = mines - (flags + explodMines);
-      document.getElementById('game-time').innerText = gameTime;
+      document.getElementById('game-time').innerText = formatGameTime(gameTime);
     }
 
     function isCompleted(){
