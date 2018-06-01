@@ -367,7 +367,7 @@
 
     function formatGameTime(gameTime) {
       var h, m, s;
-      h = Math.floor(gameTime / 360);
+      h = Math.floor(gameTime / 3600);
       m = Math.floor(gameTime / 60) % 60;
       s = gameTime % 60;
       return formatDigits(h) + ':' + formatDigits(m) + ':' + formatDigits(s);
