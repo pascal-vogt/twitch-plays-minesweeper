@@ -3,11 +3,70 @@
   <link rel = "stylesheet"
         type = "text/css"
         href = "main.css" />
-  <script src="config.js"></script>
   <script src="minesweeper.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.css" integrity="sha256-zKA1Bf41O96+gJSlkn/Bh2HATW/OhwkApPlYTp3B5O8=" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
 </head>
 <body>
+<div class="has-background-grey-dark">
+	<button class="button is-black" title="Setings" id="config_button"><span class="icon"><i class="fa fa-cog"></i></span></button>
+	<span id="status" class="tag is-warning">Not connected</span>
+	<div class="container" id="config" hidden>
+		<div class="field is-horizontal">
+			<div class="field-label is-normal">
+				<label class="label has-text-grey-light">Channel:</label>
+			</div>
+			<div class="field-body">
+				<div class="field">
+					<p class="control">
+					<input class="input has-text-gray" type="text" tabindex="1" placeholder="Your channel name" id="channel">
+					</p>
+				</div>
+				<button class="button is-info" title="Info" id="channelInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+			</div>
+		</div>
+		<div class="notification" id = "channelInfo" hidden>This is for your Twitch channel name.</div>
+
+		<div class="field is-horizontal">
+		  <div class="field-label is-normal">
+			<label class="label has-text-grey-light">User:</label>
+		  </div>
+		  <div class="field-body">
+			<div class="field">
+			  <p class="control">
+				<input class="input is-primary" type="text" tabindex="2" placeholder="Mesaage delivery account name, bot for example" id="user">
+			  </p>
+			</div>
+		  <button class="button is-info" title="Info" id="userInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+		  </div>
+		</div>
+		<div class="notification" id="userInfo" hidden>Twitch user name, the one that will be delivering the messages. Use ether your channel bot or your own account.</div>
+
+		<div class="field is-horizontal">
+		  <div class="field-label is-normal">
+			<label class="label has-text-grey-light">OAuth token:</label>
+		  </div>
+		  <div class="field-body">
+			<div class="field">
+			  <p class="control">
+				<input class="input is-primary" type="password" tabindex="3" placeholder="OAUTH TOKEN" id="OAUTH_TOKEN">
+			  </p>
+			</div>
+		  <button class="button is-info" title="Info" id="OAUTH_TOKENInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+		  </div>
+		</div>
+		<div class="notification" id="OAUTH_TOKENInfo" hidden>
+		OAUTH token - used to connect to Twitch chat. Looks something like this: oauth:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <br>
+		To get one you can visit <a href="https://twitchapps.com/tmi/" target="_blank">https://twitchapps.com/tmi/</a> <br>
+		Also keep in mind your bot might be already using one and generating a new token may cause problems with your bot.
+		</div>
+
+		<button class="button is-black" title="Connect" tabindex="4" id="connect_button">Connect</button>
+		<button class="button is-black" title="Clear the que" id="clear_button">Clear</button>
+	</div>
+	<br>
+</div>
 <h1>Chat based Minesweeper <span id="size-text"></span></h1>
 <h2>Game time: <span id="game-time"></span></h2>
 <div id="contents">

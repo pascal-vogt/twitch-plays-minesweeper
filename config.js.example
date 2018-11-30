@@ -1,9 +1,0 @@
-var BOT_USERNAME = ''; // the name of your bot in lowercase so MyBot -> mybot
-var BOT_OAUTH_TOKEN = ''; // example: oauth:8dg8s80h7s70dh0ss07 get one from https://twitchapps.com/tmi/
-
-var STREAMER = ''; // the name of the streamer
-var CHANNEL = '#' + STREAMER; // just leave this as is
-var CONNECT_TO_CHAT = true; // can be set to false for debugging purposes
-
-var AUTO_REVIVE_TIME = 60; // the time that elapses until a user gets auto-revived
-var AUTO_GAME_RESET_TIME = 25; //the time until game will reset game after board is cleared 

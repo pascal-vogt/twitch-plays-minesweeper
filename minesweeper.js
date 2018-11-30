@@ -6,6 +6,40 @@
     var mmbDown = false;
     var leftDown = false;
 
+    var BOT_USERNAME = ''; // the name of your bot in lowercase so MyBot -> mybot
+    if (localStorage.BOT_USERNAME){
+      BOT_USERNAME =  localStorage.BOT_USERNAME;
+      document.getElementById("user").value = BOT_USERNAME;
+    }
+
+    var BOT_OAUTH_TOKEN = ''; // example: oauth:8dg8s80h7s70dh0ss07 get one from https://twitchapps.com/tmi/
+    if (localStorage.BOT_OAUTH_TOKEN){
+      BOT_OAUTH_TOKEN = localStorage.BOT_OAUTH_TOKEN;
+      document.getElementById("OAUTH_TOKEN").value = BOT_OAUTH_TOKEN;
+    }
+
+    var STREAMER = ''; // the name of the streamer
+    if (localStorage.STREAMER){
+      STREAMER = localStorage.STREAMER;
+      document.getElementById("channel").value = STREAMER;
+    }
+    var CHANNEL = '#' + STREAMER; // just leave this as is
+
+    var CONNECT_TO_CHAT = true; // can be set to false for debugging purposes
+    if (localStorage.CONNECT_TO_CHAT){
+      CONNECT_TO_CHAT = (localStorage.CONNECT_TO_CHAT == "true");
+    }
+
+    var AUTO_REVIVE_TIME = 60; // the time that elapses until a user gets auto-revived
+    if (localStorage.AUTO_REVIVE_TIME){
+      AUTO_REVIVE_TIME = localStorage.AUTO_REVIVE_TIME;
+    }
+
+    var AUTO_GAME_RESET_TIME = 25; //the time until game will reset game after board is cleared
+    if (localStorage.AUTO_GAME_RESET_TIME){
+      AUTO_GAME_RESET_TIME = localStorage.AUTO_GAME_RESET_TIME;
+    }
+
     canvas.addEventListener('mousedown',function(event){
       mouseDown = true;
       if (event.button === 0)  leftDown = true;
@@ -435,9 +469,11 @@
       };
       ws.onerror = function (message) {
         console.log('Error: ' + message);
+        updateStatusMarker();
       };
       ws.onclose = function () {
         console.log('Disconnected from the chat server.');
+        updateStatusMarker();
       };
       ws.onopen = function () {
         if (ws !== null && ws.readyState === 1) {
@@ -448,6 +484,7 @@
           ws.send('NICK ' + BOT_USERNAME);
           ws.send('JOIN ' + CHANNEL);
         }
+        updateStatusMarker();
       };
       document.getElementById('offline-command-container').outerHTML = '';
     }
@@ -901,6 +938,26 @@
       document.getElementById('game-time').innerText = formatGameTime(gameTime);
     }
 
+    function updateStatusMarker(){
+    	var element = document.getElementById("status");
+    	if(ws.readyState === ws.CONNECTING){
+    		element.innerHTML = "Connecting";
+    		element.className = "tag is-info";
+    	}
+    	if(ws.readyState === ws.OPEN){
+    		element.innerHTML = "Connected";
+    		element.className = "tag is-success";
+    	}
+    	if(ws.readyState === ws.CLOSING){
+    		element.innerHTML = "Closing";
+    		element.className = "tag is-warning";
+    	}
+    	if(ws.readyState === ws.CLOSED){
+    		element.innerHTML = "Disconected";
+    		element.className = "tag is-danger";
+    	}
+    }
+
     function isCompleted(){
       // also is triggered by debug command !reveal
       for (y = 0; y < nh; ++y) {
@@ -945,19 +1002,47 @@
       return count;
     }
 
-    if (CONNECT_TO_CHAT) {
-      connectChat();
-    }else {
-      document.getElementById('offline-command-field').addEventListener('keydown', function (ev) {
-        if (ev.keyCode === 13) {
-          // the newline at the end is what we get from twitch chat too so we are better off
-          // having a realistic imitation here to avoid discovering bugs in regexes later on
-          executeCommand(ev.target.value + '\r\n', locateUser(STREAMER, true));
-        }
-      });
+    document.getElementById("config_button").onclick = function() {
+      document.getElementById("config").hidden = !document.getElementById("config").hidden;
     }
-
-    initData();
-    drawAllTheThings();
+    document.getElementById("channelInfo_button").onclick = function() {
+      document.getElementById("channelInfo").hidden = !document.getElementById("channelInfo").hidden;
+    }
+    document.getElementById("userInfo_button").onclick = function() {
+      document.getElementById("userInfo").hidden = !document.getElementById("userInfo").hidden;
+    }
+    document.getElementById("OAUTH_TOKENInfo_button").onclick = function() {
+      document.getElementById("OAUTH_TOKENInfo").hidden = !document.getElementById("OAUTH_TOKENInfo").hidden;
+    }
+    document.getElementById("clear_button").onclick = function() {
+      localStorage.clear();
+      document.getElementById("user").value = "";
+      document.getElementById("OAUTH_TOKEN").value = "";
+      document.getElementById("channel").value = "";
+    }
+    document.getElementById("connect_button").onclick = function() {
+      // read values
+      STREAMER = document.getElementById("channel").value;
+      BOT_USERNAME = document.getElementById("user").value;
+      BOT_OAUTH_TOKEN = document.getElementById("OAUTH_TOKEN").value;
+      document.getElementById("config").hidden = true;
+      // add stuff to localStorage
+      localStorage.STREAMER = STREAMER;
+      localStorage.BOT_USERNAME = BOT_USERNAME;
+      localStorage.BOT_OAUTH_TOKEN = BOT_OAUTH_TOKEN;
+      if (CONNECT_TO_CHAT) {
+        connectChat();
+      }else {
+        document.getElementById('offline-command-field').addEventListener('keydown', function (ev) {
+          if (ev.keyCode === 13) {
+            // the newline at the end is what we get from twitch chat too so we are better off
+            // having a realistic imitation here to avoid discovering bugs in regexes later on
+            executeCommand(ev.target.value + '\r\n', locateUser(STREAMER, true));
+          }
+        });
+      }
+      initData();
+      drawAllTheThings();
+    }
   });
 })();
