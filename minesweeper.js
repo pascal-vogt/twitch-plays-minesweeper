@@ -30,10 +30,14 @@
       CONNECT_TO_CHAT = (localStorage.CONNECT_TO_CHAT == "true");
     }
 
+    var ADVANCED_BOT = false; // do we connect to chat with an account
+
     var AUTO_REVIVE_TIME = 60; // the time that elapses until a user gets auto-revived
     if (localStorage.AUTO_REVIVE_TIME){
       AUTO_REVIVE_TIME = localStorage.AUTO_REVIVE_TIME;
     }
+    document.getElementById("timeout").value = AUTO_REVIVE_TIME;
+
 
     var AUTO_GAME_RESET_TIME = 25; //the time until game will reset game after board is cleared
     if (localStorage.AUTO_GAME_RESET_TIME){
@@ -491,7 +495,11 @@
 
     function sentMessageToChat(message) {
       if (ws) {
-        ws.send("PRIVMSG " + CHANNEL + " :" + message + '\r\n');
+        if (ADVANCED_BOT) {
+          ws.send("PRIVMSG " + CHANNEL + " :" + message + '\r\n');
+        } else {
+          // TODO: the UI for players to see whats happening
+        }
       } else {
         console.log(message);
       }
@@ -1014,22 +1022,50 @@
     document.getElementById("OAUTH_TOKENInfo_button").onclick = function() {
       document.getElementById("OAUTH_TOKENInfo").hidden = !document.getElementById("OAUTH_TOKENInfo").hidden;
     }
+    document.getElementById("advancedBotInfo_button").onclick = function() {
+      document.getElementById("advancedBotInfo").hidden = !document.getElementById("advancedBotInfo").hidden;
+    }
+    document.getElementById("timeoutInfo_button").onclick = function() {
+      document.getElementById("timeoutInfo").hidden = !document.getElementById("timeoutInfo").hidden;
+    }
     document.getElementById("clear_button").onclick = function() {
       localStorage.clear();
       document.getElementById("user").value = "";
       document.getElementById("OAUTH_TOKEN").value = "";
       document.getElementById("channel").value = "";
     }
+
+    document.getElementById("advanced_button").onclick = function() {
+      document.getElementById("advanced_button").classList.toggle('is-black');
+      document.getElementById("advanced_button").classList.toggle('is-primary');
+      document.getElementById("advancedSettings").hidden = !document.getElementById("advancedSettings").hidden;
+    }
+
+    document.getElementById("advancedBot_button").onclick = function() {
+      document.getElementById("advancedBot_button").classList.toggle('is-black');
+      document.getElementById("advancedBot_button").classList.toggle('is-primary');
+      ADVANCED_BOT = !ADVANCED_BOT;
+      document.getElementById("advancedBot").hidden = !document.getElementById("advancedBot").hidden;
+    }
+
     document.getElementById("connect_button").onclick = function() {
       // read values
       STREAMER = document.getElementById("channel").value;
-      BOT_USERNAME = document.getElementById("user").value;
-      BOT_OAUTH_TOKEN = document.getElementById("OAUTH_TOKEN").value;
+      AUTO_REVIVE_TIME = document.getElementById("timeout").value;
+
+      if (ADVANCED_BOT) {
+        BOT_USERNAME = document.getElementById("user").value;
+        BOT_OAUTH_TOKEN = document.getElementById("OAUTH_TOKEN").value;
+        localStorage.BOT_USERNAME = BOT_USERNAME;
+        localStorage.BOT_OAUTH_TOKEN = BOT_OAUTH_TOKEN;
+      } else {
+        BOT_USERNAME = "justinfan" + Math.floor((Math.random() * 10000));
+        BOT_OAUTH_TOKEN = "Password1";
+      }
       document.getElementById("config").hidden = true;
       // add stuff to localStorage
       localStorage.STREAMER = STREAMER;
-      localStorage.BOT_USERNAME = BOT_USERNAME;
-      localStorage.BOT_OAUTH_TOKEN = BOT_OAUTH_TOKEN;
+      localStorage.AUTO_REVIVE_TIME = AUTO_REVIVE_TIME;
       if (CONNECT_TO_CHAT) {
         connectChat();
       }else {

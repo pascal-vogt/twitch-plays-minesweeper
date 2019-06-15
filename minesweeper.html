@@ -28,42 +28,74 @@
 		</div>
 		<div class="notification" id = "channelInfo" hidden>This is for your Twitch channel name.</div>
 
-		<div class="field is-horizontal">
-		  <div class="field-label is-normal">
-			<label class="label has-text-grey-light">User:</label>
-		  </div>
-		  <div class="field-body">
-			<div class="field">
-			  <p class="control">
-				<input class="input is-primary" type="text" tabindex="2" placeholder="Mesaage delivery account name, bot for example" id="user">
-			  </p>
-			</div>
-		  <button class="button is-info" title="Info" id="userInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
-		  </div>
-		</div>
-		<div class="notification" id="userInfo" hidden>Twitch user name, the one that will be delivering the messages. Use ether your channel bot or your own account.</div>
+    <div id = "advancedSettings" hidden>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+        <label class="label has-text-grey-light">Advanced bot</label>
+        </div>
+        <div class="field-body">
+        <div class="field">
+          <p class="control">
+          <button class="button is-black" title="Advanced" tabindex="2" id="advancedBot_button">Advanced bot</button>
+          </p>
+        </div>
+        <button class="button is-info" title="Info" id="advancedBotInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+        </div>
+      </div>
+      <div class="notification" id="advancedBotInfo" hidden>Connect your own account to the Twitch chat - this enables inchat feedback on player actions.</div>
 
-		<div class="field is-horizontal">
-		  <div class="field-label is-normal">
-			<label class="label has-text-grey-light">OAuth token:</label>
-		  </div>
-		  <div class="field-body">
-			<div class="field">
-			  <p class="control">
-				<input class="input is-primary" type="password" tabindex="3" placeholder="OAUTH TOKEN" id="OAUTH_TOKEN">
-			  </p>
-			</div>
-		  <button class="button is-info" title="Info" id="OAUTH_TOKENInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
-		  </div>
-		</div>
-		<div class="notification" id="OAUTH_TOKENInfo" hidden>
-		OAUTH token - used to connect to Twitch chat. Looks something like this: oauth:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <br>
-		To get one you can visit <a href="https://twitchapps.com/tmi/" target="_blank">https://twitchapps.com/tmi/</a> <br>
-		Also keep in mind your bot might be already using one and generating a new token may cause problems with your bot.
-		</div>
-
-		<button class="button is-black" title="Connect" tabindex="4" id="connect_button">Connect</button>
-		<button class="button is-black" title="Clear the que" id="clear_button">Clear</button>
+      <div id = "advancedBot" hidden>
+    		<div class="field is-horizontal">
+    		  <div class="field-label is-normal">
+    			<label class="label has-text-grey-light">User:</label>
+    		  </div>
+    		  <div class="field-body">
+    			<div class="field">
+    			  <p class="control">
+    				<input class="input is-primary" type="text" tabindex="3" placeholder="Mesaage delivery account name, bot for example" id="user">
+    			  </p>
+    			</div>
+    		  <button class="button is-info" title="Info" id="userInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+    		  </div>
+    		</div>
+    		<div class="notification" id="userInfo" hidden>Twitch user name, the one that will be delivering the messages. Use ether your channel bot or your own account.</div>
+    		<div class="field is-horizontal">
+    		  <div class="field-label is-normal">
+    			<label class="label has-text-grey-light">OAuth token:</label>
+    		  </div>
+    		  <div class="field-body">
+    			<div class="field">
+    			  <p class="control">
+    				<input class="input is-primary" type="password" tabindex="4" placeholder="OAUTH TOKEN" id="OAUTH_TOKEN">
+    			  </p>
+    			</div>
+    		  <button class="button is-info" title="Info" id="OAUTH_TOKENInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+    		  </div>
+    		</div>
+    		<div class="notification" id="OAUTH_TOKENInfo" hidden>
+    		OAUTH token - used to connect to Twitch chat. Looks something like this: oauth:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx <br>
+    		To get one you can visit <a href="https://twitchapps.com/tmi/" target="_blank">https://twitchapps.com/tmi/</a> <br>
+    		Also keep in mind your bot might be already using one and generating a new token may cause problems with your bot.
+    		</div>
+    	</div>
+      <div class="field is-horizontal">
+        <div class="field-label is-normal">
+        <label class="label has-text-grey-light">Cooldown on death:</label>
+        </div>
+        <div class="field-body">
+        <div class="field">
+          <p class="control">
+          <input class="input has-text-gray" type="number" tabindex="5" placeholder="60" id="timeout">
+          </p>
+        </div>
+        <button class="button is-info" title="Info" id="timeoutInfo_button"><span class="icon"><i class="fas fa-info-circle"></i></span></button>
+        </div>
+      </div>
+      <div class="notification" id="timeoutInfo" hidden>Connect your own account to the Twitch chat - this enables inchat feedback on player actions.</div>
+    </div>
+		<button class="button is-black" title="Connect" tabindex="6" id="connect_button">Connect</button>
+    <button class="button is-black" title="Advanced settings" id="advanced_button">Advanced</button>
+    <button class="button is-black" title="Clear the que" id="clear_button">Clear</button>
 	</div>
 	<br>
 </div>
